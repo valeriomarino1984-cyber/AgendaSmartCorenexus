@@ -10,7 +10,9 @@ from fastapi import FastAPI
 from app.wsgi import build_wsgi_app
 
 
-def _call(script_name: str, path_info: str) -> tuple[str, dict[str, str]]:
+def _call(
+    script_name: str, path_info: str, request_uri: str | None = None
+) -> tuple[str, dict[str, str]]:
     app = FastAPI()
 
     @app.get("/api/v1/ping")
@@ -20,6 +22,8 @@ def _call(script_name: str, path_info: str) -> tuple[str, dict[str, str]]:
     environ: dict[str, object] = {}
     setup_testing_defaults(environ)
     environ.update(SCRIPT_NAME=script_name, PATH_INFO=path_info, REQUEST_METHOD="GET")
+    if request_uri is not None:
+        environ["REQUEST_URI"] = request_uri
     environ["wsgi.input"] = io.BytesIO(b"")
     captured: dict[str, str] = {}
 
@@ -33,10 +37,21 @@ def _call(script_name: str, path_info: str) -> tuple[str, dict[str, str]]:
 
 
 @pytest.mark.parametrize(
-    ("script_name", "path_info"),
-    [("/api", "/v1/ping"), ("", "/api/v1/ping")],
+    ("script_name", "path_info", "request_uri"),
+    [
+        ("/api", "/v1/ping", None),  # montata su /api, prefisso separato
+        ("", "/api/v1/ping", None),  # alla radice
+        ("/api", "/api/v1/ping", None),  # prefisso ripetuto in PATH_INFO (Netsons, sito su /)
+        ("/api", "/v1/ping", "/api/v1/ping?x=1"),  # REQUEST_URI disponibile
+        ("/api", "/api/v1/ping", "/api/v1/ping"),
+        ("", "/qualcosa", "/api/v1/%70ing"),  # REQUEST_URI ha la precedenza, decodificato
+        ("", "/v1/ping", None),  # prefisso tolto dal server senza indicarlo
+        ("", "/v1/ping", "/v1/ping"),
+    ],
 )
-def test_routes_work_mounted_or_at_root(script_name: str, path_info: str) -> None:
-    status, body = _call(script_name, path_info)
+def test_routes_work_however_the_server_mounts_the_app(
+    script_name: str, path_info: str, request_uri: str | None
+) -> None:
+    status, body = _call(script_name, path_info, request_uri)
     assert status.startswith("200")
     assert body == {"pong": "ok"}

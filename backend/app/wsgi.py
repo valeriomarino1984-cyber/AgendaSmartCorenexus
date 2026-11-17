@@ -6,12 +6,48 @@ import os
 import threading
 from collections.abc import Callable, Iterable
 from typing import Any
+from urllib.parse import unquote
 
 from a2wsgi import ASGIMiddleware
 from fastapi import FastAPI
 
 StartResponse = Callable[..., Any]
 WSGIApp = Callable[[dict[str, Any], StartResponse], Iterable[bytes]]
+
+
+# Tutte le rotte dell'API stanno sotto questo prefisso (anche la documentazione /api/docs).
+API_PREFIX = "/api"
+
+
+def full_path(environ: dict[str, Any]) -> str:
+    """Percorso completo con il prefisso /api, qualunque sia il modo in cui il server lo passa."""
+    path = _raw_full_path(environ)
+    if path == API_PREFIX or path.startswith(API_PREFIX + "/"):
+        return path
+    # Il server ha tolto il prefisso senza indicarlo in SCRIPT_NAME: lo si rimette.
+    return API_PREFIX + (path if path.startswith("/") else "/" + path)
+
+
+def _raw_full_path(environ: dict[str, Any]) -> str:
+    """Percorso completo della richiesta (es. /api/v1/health), qualunque sia il montaggio.
+
+    Con l'app pubblicata su agenda.corenexus.it/api il server può passare SCRIPT_NAME=/api e
+    PATH_INFO=/v1/..., oppure PATH_INFO già completo (succede su Netsons quando un'altra app
+    occupa la radice del dominio). Si usa REQUEST_URI, l'indirizzo originale, quando c'è;
+    altrimenti SCRIPT_NAME + PATH_INFO senza ripetere il prefisso.
+    """
+    request_uri: str | None = environ.get("REQUEST_URI")
+    if request_uri:
+        raw = request_uri.split("?", 1)[0]
+        if raw.startswith(("http://", "https://")):  # forma assoluta, rara ma ammessa
+            raw = "/" + raw.split("/", 3)[-1] if raw.count("/") >= 3 else "/"
+        # PATH_INFO in WSGI è decodificato e rappresentato in latin-1 (PEP 3333).
+        return unquote(raw, encoding="latin-1")
+    script_name: str = environ.get("SCRIPT_NAME", "")
+    path_info: str = environ.get("PATH_INFO", "")
+    if script_name and not (path_info == script_name or path_info.startswith(script_name + "/")):
+        return script_name + path_info
+    return path_info or "/"
 
 
 def build_wsgi_app(app: FastAPI) -> WSGIApp:
@@ -41,13 +77,8 @@ def build_wsgi_app(app: FastAPI) -> WSGIApp:
         return asgi
 
     def application(environ: dict[str, Any], start_response: StartResponse) -> Iterable[bytes]:
-        # Con l'app pubblicata su agenda.corenexus.it/api, il server passa SCRIPT_NAME=/api e
-        # PATH_INFO=/v1/...: si ricompone il path completo, così le rotte /api/v1 restano
-        # identiche in sviluppo e in produzione.
-        script_name = environ.get("SCRIPT_NAME", "")
-        if script_name:
-            environ["PATH_INFO"] = script_name + environ.get("PATH_INFO", "")
-            environ["SCRIPT_NAME"] = ""
+        environ["PATH_INFO"] = full_path(environ)
+        environ["SCRIPT_NAME"] = ""
         return _asgi_for_this_process()(environ, start_response)  # type: ignore[arg-type]
 
     return application
