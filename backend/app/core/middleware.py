@@ -1,0 +1,77 @@
+"""Middleware ASGI: request_id, log di accesso senza dati sensibili nel path."""
+
+from __future__ import annotations
+
+import re
+import time
+import uuid
+
+import structlog
+from starlette.datastructures import Headers, MutableHeaders
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+_REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9-]{8,64}$")
+log = structlog.get_logger("http")
+
+
+def route_template(scope: Scope) -> str:
+    """Path della richiesta con i parametri sostituiti dal loro nome (es. /a/{token}).
+
+    Non si usa `route.path` perché per i router inclusi FastAPI può restituire il path
+    relativo senza prefisso. Se un valore non è individuabile come segmento (es. parametri
+    `:path` con '/'), si ricade sul formato della rotta: il valore non viene mai registrato.
+    """
+    route = scope.get("route")
+    if route is None:
+        return "<unmatched>"
+    path: str = scope.get("path", "")
+    params: dict[str, object] = scope.get("path_params") or {}
+    if not params:
+        return path
+    by_value = {str(v).lower(): k for k, v in params.items()}
+    segments = path.split("/")
+    found = {s.lower() for s in segments} & by_value.keys()
+    if len(found) < len(by_value):
+        return "…" + str(getattr(route, "path_format", "<route>"))
+    return "/".join(
+        "{" + by_value[s.lower()] + "}" if s.lower() in by_value else s for s in segments
+    )
+
+
+class RequestContextMiddleware:
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        incoming = Headers(scope=scope).get("x-request-id")
+        request_id = incoming if incoming and _REQUEST_ID_RE.match(incoming) else uuid.uuid4().hex
+        scope.setdefault("state", {})["request_id"] = request_id
+        structlog.contextvars.clear_contextvars()
+        structlog.contextvars.bind_contextvars(request_id=request_id)
+
+        status_code = 500
+        started = time.perf_counter()
+
+        async def send_wrapper(message: Message) -> None:
+            nonlocal status_code
+            if message["type"] == "http.response.start":
+                status_code = message["status"]
+                MutableHeaders(scope=message)["X-Request-ID"] = request_id
+            await send(message)
+
+        try:
+            await self.app(scope, receive, send_wrapper)
+        finally:
+            # Solo il template (es. /public/manage/{token}), mai i valori né la query string.
+            log.info(
+                "http_request",
+                method=scope["method"],
+                route=route_template(scope),
+                status=status_code,
+                duration_ms=round((time.perf_counter() - started) * 1000, 1),
+            )
+            structlog.contextvars.clear_contextvars()
