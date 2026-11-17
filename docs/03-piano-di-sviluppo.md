@@ -13,6 +13,8 @@
 | P5 | Scelta hosting UE e provider email UE | CoreNexus | Decisione 3, blocca lo Sprint 0 |
 | P6 | Dominio `prenota.<dominio>` e dominio email con SPF/DKIM/DMARC | CoreNexus | La deliverability email richiede tempo di "riscaldamento" |
 
+> **Aggiornamento 17/11/2026:** hosting Netsons cPanel con MariaDB (Decisione 3). Lo Sprint 0 è stato adattato (vedi `07-deploy-netsons.md`). Negli sprint seguenti: rate limit su DB (Sprint 1), lock `FOR UPDATE` contro le doppie prenotazioni (Sprint 3), cron di cPanel al posto di Celery (Sprint 5).
+
 ## Release 1 – MVP (≈ 12–14 settimane)
 
 | Sprint | Contenuto | Criteri MVP coperti | Test chiave |

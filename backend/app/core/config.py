@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from functools import lru_cache
 from typing import Literal
 
@@ -10,8 +9,6 @@ from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 Environment = Literal["development", "test", "staging", "production"]
-
-_PG_IDENTIFIER = re.compile(r"^[a-z_][a-z0-9_]{0,62}$")
 
 
 class Settings(BaseSettings):
@@ -21,16 +18,14 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_json: bool = True
 
-    # Ruolo applicativo: NON proprietario delle tabelle, senza BYPASSRLS.
+    # Utente applicativo MySQL/MariaDB: solo SELECT, INSERT, UPDATE, DELETE (nessun DDL).
     database_url: SecretStr
-    # Ruolo proprietario dello schema: usato solo da Alembic, mai dall'applicazione.
+    # Utente con tutti i privilegi sul database: usato solo per le migrazioni Alembic.
     migrations_database_url: SecretStr | None = None
-    # Nome del ruolo applicativo atteso: l'app rifiuta di avviarsi con un ruolo diverso.
-    app_db_role: str = "corenexus_app"
     db_pool_size: int = Field(default=5, ge=1)
-    db_max_overflow: int = Field(default=10, ge=0)
-
-    redis_url: SecretStr = SecretStr("redis://localhost:6379/0")
+    db_max_overflow: int = Field(default=5, ge=0)
+    # Secondi dopo cui una connessione viene ricreata (MySQL chiude quelle inattive).
+    db_pool_recycle: int = Field(default=280, ge=30)
 
     app_base_url: str = "http://localhost:3000"
     public_booking_base_url: str = "http://localhost:3000/prenota"
@@ -39,11 +34,11 @@ class Settings(BaseSettings):
     sentry_dsn: SecretStr | None = None
     sentry_traces_sample_rate: float = Field(default=0.0, ge=0.0, le=1.0)
 
-    @field_validator("app_db_role")
+    @field_validator("database_url", "migrations_database_url")
     @classmethod
-    def _valid_role(cls, value: str) -> str:
-        if not _PG_IDENTIFIER.match(value):
-            raise ValueError("app_db_role non è un identificatore PostgreSQL valido")
+    def _mysql_only(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is not None and not value.get_secret_value().startswith("mysql+pymysql://"):
+            raise ValueError("l'URL del database deve iniziare con mysql+pymysql://")
         return value
 
     @property

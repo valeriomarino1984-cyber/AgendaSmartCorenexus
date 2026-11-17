@@ -1,21 +1,22 @@
-"""Ambiente Alembic asincrono. Usa il ruolo proprietario, mai il ruolo applicativo."""
+"""Ambiente Alembic. Usa l'utente con privilegi DDL, mai l'utente applicativo."""
 
 from __future__ import annotations
 
-import asyncio
 import os
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
+
+import app.models  # noqa: F401  (registra tutti i modelli nei metadata)
+from app.core.models import Base
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name, disable_existing_loggers=False)
 
-target_metadata = None  # verrà collegato ai modelli SQLAlchemy dallo Sprint 1
+target_metadata = Base.metadata
 
 
 def _url() -> str:
@@ -31,20 +32,16 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def _do_run(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
-    with context.begin_transaction():
-        context.run_migrations()
-
-
-async def run_migrations_online() -> None:
-    engine = create_async_engine(_url(), poolclass=NullPool)
-    async with engine.connect() as connection:
-        await connection.run_sync(_do_run)
-    await engine.dispose()
+def run_migrations_online() -> None:
+    engine = create_engine(_url(), poolclass=NullPool)
+    with engine.connect() as connection:
+        context.configure(connection=connection, target_metadata=target_metadata)
+        with context.begin_transaction():
+            context.run_migrations()
+    engine.dispose()
 
 
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    asyncio.run(run_migrations_online())
+    run_migrations_online()

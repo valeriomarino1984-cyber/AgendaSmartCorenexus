@@ -6,7 +6,7 @@ Come previsto dalla specifica, **queste decisioni non sono state prese dall'agen
 |---|---|---|---|---|---|
 | 1 | Nome commerciale | Branding, dominio, template WhatsApp (il nome compare nei messaggi) | — | Decidere prima dello Sprint 6 (i template approvati contengono testo fisso) | APERTA |
 | 2 | Stack definitivo | Sprint 0 | a) Specifica: Next.js + FastAPI + Celery/Redis + PostgreSQL · b) Varianti | **(a)**, con auth gestita dal backend (no Supabase Auth): vedi Analisi §3.2 | **APPROVATA** (17/11/2026): stack della specifica, auth gestita dal backend FastAPI, niente Supabase Auth |
-| 3 | Hosting e database | Sprint 0 | a) Cloud gestito UE (es. AWS eu-south-1 Milano / GCP europe-west8) · b) Provider europei (Hetzner, Scaleway, OVH) + Postgres gestito · c) Supabase solo come Postgres gestito in regione UE | Postgres **gestito** con backup PITR e regione UE; scelta del provider in base al budget | **PARZIALE** (17/11/2026): dominio applicativo `agenda.corenexus.it` approvato. **Provider cloud ancora da scegliere**: blocca solo il deploy (`infra/deploy`), non lo sviluppo |
+| 3 | Hosting e database | Sprint 0 | a) Cloud gestito UE (es. AWS eu-south-1 Milano / GCP europe-west8) · b) Provider europei (Hetzner, Scaleway, OVH) + Postgres gestito · c) Supabase solo come Postgres gestito in regione UE | Postgres **gestito** con backup PITR e regione UE; scelta del provider in base al budget | **APPROVATA** (17/11/2026): **hosting Netsons (cPanel)**, come Presenze, sottodominio `agenda.corenexus.it`; database **MariaDB/MySQL** del cPanel (PostgreSQL non disponibile). Vedi conseguenze sotto e `07-deploy-netsons.md` |
 | 4 | Onboarding WhatsApp | Sprint 6, App Review | a) Embedded Signup (richiede Tech Provider) · b) Collegamento manuale assistito (solo fase pilota) · c) Tramite BSP | **(a)** a regime; **(b)** per i primi tenant pilota mentre è in corso l'approvazione Meta | **APPROVATA** (17/11/2026) |
 | 5 | Numeri dei professionisti | Modello dati WhatsApp, prezzi | a) 1 numero per tenant · b) 1 numero per professionista · c) Numero unico CoreNexus per tutti | **(a)** per l'MVP. (c) è sconsigliata: il cliente finale vedrebbe CoreNexus e non lo studio, e la qualità del numero sarebbe condivisa tra tutti i tenant | **APPROVATA** (17/11/2026): 1 numero per studio |
 | 6 | Provider pagamenti | R2/R4 | Stripe / altri | Stripe (Billing + Checkout), come da specifica | APERTA |
@@ -31,6 +31,15 @@ Come previsto dalla specifica, **queste decisioni non sono state prese dall'agen
 - Portale pubblico: proposta `https://agenda.corenexus.it/prenota/{slug}` (stesso dominio, un solo certificato e una sola configurazione cookie). In alternativa `prenota.corenexus.it` come da specifica: entrambe le soluzioni sono possibili perché l'URL base è configurabile (`PUBLIC_BOOKING_BASE_URL`).
 - Link di gestione appuntamento: `https://agenda.corenexus.it/a/{token}`
 - Webhook Meta: `https://agenda.corenexus.it/api/v1/webhooks/whatsapp`
+
+### Decisione 3 – Netsons cPanel con MariaDB/MySQL
+Il cPanel offre *Setup Node.js App*, *Setup Python App* e MySQL/MariaDB, ma non PostgreSQL, Redis o processi sempre attivi. Adattamenti (dettagli in `01-analisi-e-architettura.md` §7):
+- **Isolamento tra studi:** non esiste la RLS. Al suo posto: filtro automatico ORM su ogni query, controllo delle scritture, rifiuto delle query senza contesto, chiavi esterne composite `(tenant_id, id)` nel database, utente applicativo senza privilegi sullo schema. Tutto coperto da test, con una controprova che disattiva il filtro.
+- **Doppie prenotazioni:** al posto del vincolo di esclusione PostgreSQL, lock in transazione (`SELECT … FOR UPDATE` sul professionista) prima del controllo di sovrapposizione. Test di concorrenza obbligatori nello Sprint 3.
+- **Notifiche:** niente Celery/Redis. Coda nel database (già prevista) e invio tramite **cron di cPanel** che chiama un indirizzo protetto, come `/api/promemoria` di Presenze. La puntualità dipende dalla frequenza del cron (da verificare: 1–15 minuti), adeguata a promemoria a 24 e 48 ore.
+- **Limite tentativi di login:** nel database invece che su Redis.
+- **Date:** salvate in UTC (MySQL `DATETIME` non conserva il fuso).
+- **Reversibilità:** se in futuro servirà più potenza, il passaggio a un VPS con PostgreSQL resta possibile. Il codice di dominio non dipende dal database scelto.
 
 ### Decisione 7 – gli studi pagano Meta direttamente
 - Durante l'Embedded Signup lo studio aggiunge il proprio metodo di pagamento alla sua WABA. CoreNexus non anticipa costi Meta e non ha rischio di credito.

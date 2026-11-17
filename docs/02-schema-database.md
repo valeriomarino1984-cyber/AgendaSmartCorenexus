@@ -2,6 +2,13 @@
 
 **Stato:** BOZZA. Sarà implementato esclusivamente tramite migrazioni Alembic. Il DDL qui sotto è di riferimento progettuale, non da eseguire a mano.
 
+> **Aggiornamento 17/11/2026 – database MariaDB/MySQL (hosting Netsons).** Il DDL qui sotto è scritto per PostgreSQL. Le tabelle verranno create dai modelli SQLAlchemy con queste regole di traduzione:
+> - `uuid` → `CHAR(32)` (tipo `Uuid` di SQLAlchemy); `timestamptz` → `DATETIME` in **UTC**; `jsonb` → `JSON`; `citext` → `VARCHAR` con collation `utf8mb4_unicode_ci` (già case-insensitive); `inet` → `VARCHAR(45)`; `text[]` → `JSON`.
+> - Policy RLS → modelli `TenantScoped` (filtro ORM) + `UNIQUE (tenant_id, id)` + FK composite (già previste qui).
+> - `EXCLUDE USING gist` → lock `SELECT … FOR UPDATE` in transazione (vedi `01-analisi-e-architettura.md` §7).
+> - Indici parziali (`WHERE status = …`) → indici normali su `(status, scheduled_at)`.
+> - `CHECK` → supportati da MariaDB 10.2+ e MySQL 8.0.16+.
+
 Legenda: **[R1]** MVP · **[R2]** Automazione · **[R3]** Multi-studio · **[R4]** Commercializzazione · **(+)** tabella o colonna aggiunta rispetto alla specifica, con motivazione.
 
 ## Convenzioni

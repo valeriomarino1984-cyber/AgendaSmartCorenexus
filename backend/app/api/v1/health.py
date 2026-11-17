@@ -5,7 +5,6 @@ from typing import Literal
 import structlog
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
-from redis.asyncio import Redis
 
 from app.core.db import Database
 from app.core.errors import ServiceUnavailableError
@@ -19,19 +18,15 @@ class HealthStatus(BaseModel):
 
 
 @router.get("", response_model=HealthStatus, summary="Liveness: il processo risponde")
-async def liveness() -> HealthStatus:
+def liveness() -> HealthStatus:
     return HealthStatus(status="ok")
 
 
-@router.get(
-    "/ready", response_model=HealthStatus, summary="Readiness: database e Redis raggiungibili"
-)
-async def readiness(request: Request) -> HealthStatus:
+@router.get("/ready", response_model=HealthStatus, summary="Readiness: database raggiungibile")
+def readiness(request: Request) -> HealthStatus:
     db: Database = request.app.state.db
-    redis: Redis = request.app.state.redis
     try:
-        await db.ping()
-        await redis.ping()
+        db.ping()
     except Exception as exc:
         log.warning("readiness_failed", error_type=type(exc).__name__)
         raise ServiceUnavailableError() from exc
