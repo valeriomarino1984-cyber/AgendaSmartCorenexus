@@ -18,7 +18,7 @@
 | Health | `GET /api/v1/health` (liveness), `GET /api/v1/health/ready` (DB + Redis) | Test + prova con curl |
 | Sentry | Inizializzato solo se `SENTRY_DSN` è valorizzato, `send_default_pii=False` | — |
 | OpenAPI | `/api/docs` fuori dalla produzione, disabilitato in produzione | 2 test |
-| Frontend | Layout in italiano, nessun font Google (niente chiamate esterne), build statica | `pnpm lint`, `pnpm typecheck`, `pnpm build` superati |
+| Frontend | Layout in italiano, build statica (dal branch `design-system`: font Inter via `next/font`, servito dal nostro dominio) | `pnpm lint`, `pnpm typecheck`, `pnpm build` superati |
 | CI | `.github/workflows/ci.yml`: backend (ruff, format, mypy strict, pytest con Postgres e Redis reali) e frontend (lint, typecheck, build) | YAML validato; **non ancora eseguita su GitHub** |
 
 **Risultato:** 40 test superati, ruff e mypy (strict) puliti.

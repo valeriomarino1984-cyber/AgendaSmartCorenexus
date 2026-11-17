@@ -19,6 +19,7 @@ docs/       analisi, schema, piano, decisioni, report di sprint
 3. [`docs/03-piano-di-sviluppo.md`](docs/03-piano-di-sviluppo.md): sprint e release
 4. [`docs/04-decisioni-aperte.md`](docs/04-decisioni-aperte.md): registro decisioni
 5. [`docs/05-report-sprint-0.md`](docs/05-report-sprint-0.md): report Sprint 0
+6. [`docs/06-design-system.md`](docs/06-design-system.md): design system (condiviso con Presenze)
 
 ## Modello di sicurezza del database (da leggere prima di contribuire)
 
