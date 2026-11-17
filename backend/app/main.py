@@ -16,6 +16,7 @@ from app.core.db import Database
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
 from app.core.middleware import RequestContextMiddleware, SecurityHeadersMiddleware
+from app.core.migrate import expected_revision
 from app.core.sentry import init_sentry
 
 log = structlog.get_logger("app")
@@ -38,6 +39,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     # Fail-closed: con un utente che può modificare lo schema l'applicazione non parte.
     db.verify_privileges()
+    db.verify_schema_revision(expected_revision())
 
     expose_docs = settings.environment != "production"
     app = FastAPI(

@@ -13,6 +13,7 @@ from pathlib import Path
 import structlog
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import NullPool
 
@@ -26,12 +27,18 @@ def alembic_config() -> Config:
 
 
 def migrate_on_startup() -> None:
+    """Applica le migrazioni se AUTO_MIGRATE=1, poi toglie le credenziali DDL dall'ambiente.
+
+    Passenger può ricaricare il file di avvio nello stesso processo: in quel caso le credenziali
+    sono già state rimosse e le migrazioni (già applicate) vengono saltate senza errore.
+    Se lo schema non fosse aggiornato, create_app() si rifiuta comunque di partire.
+    """
+    url = os.environ.pop("MIGRATIONS_DATABASE_URL", None)
     if os.environ.get("AUTO_MIGRATE") != "1":
-        os.environ.pop("MIGRATIONS_DATABASE_URL", None)
         return
-    url = os.environ.get("MIGRATIONS_DATABASE_URL")
     if not url:
-        raise RuntimeError("AUTO_MIGRATE=1 ma MIGRATIONS_DATABASE_URL non è impostata")
+        log.warning("auto_migrate_skipped", reason="MIGRATIONS_DATABASE_URL non disponibile")
+        return
     engine = create_engine(url, poolclass=NullPool)
     try:
         with engine.connect() as conn:
@@ -39,10 +46,16 @@ def migrate_on_startup() -> None:
             if got != 1:
                 raise RuntimeError("impossibile ottenere il lock delle migrazioni")
             try:
-                command.upgrade(alembic_config(), "head")
-                log.info("migrations_applied")
+                cfg = alembic_config()
+                # URL passato ad Alembic in memoria: non torna mai nell'ambiente del processo.
+                cfg.attributes["database_url"] = url
+                command.upgrade(cfg, "head")
             finally:
                 conn.execute(text("SELECT RELEASE_LOCK(:n)"), {"n": LOCK_NAME})
     finally:
         engine.dispose()
-        os.environ.pop("MIGRATIONS_DATABASE_URL", None)
+    log.info("migrations_applied")
+
+
+def expected_revision() -> str | None:
+    return ScriptDirectory.from_config(alembic_config()).get_current_head()

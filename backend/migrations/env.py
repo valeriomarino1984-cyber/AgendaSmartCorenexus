@@ -13,14 +13,16 @@ import app.models  # noqa: F401  (registra tutti i modelli nei metadata)
 from app.core.models import Base
 
 config = context.config
-if config.config_file_name is not None:
+# Da riga di comando si usa il logging di alembic.ini; all'avvio dell'app resta quello dell'app.
+if config.config_file_name is not None and "database_url" not in config.attributes:
     fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 
 
 def _url() -> str:
-    url = os.environ.get("MIGRATIONS_DATABASE_URL")
+    # Da migrate_on_startup() (in memoria) oppure, da riga di comando, dalla variabile d'ambiente.
+    url = config.attributes.get("database_url") or os.environ.get("MIGRATIONS_DATABASE_URL")
     if not url:
         raise RuntimeError("MIGRATIONS_DATABASE_URL non impostata")
     return url

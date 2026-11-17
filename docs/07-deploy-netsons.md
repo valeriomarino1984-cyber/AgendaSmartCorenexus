@@ -21,7 +21,7 @@ Nella guida `UTENTE` è il nome utente cPanel. cPanel antepone `UTENTE_` ai nomi
 1. *Manage My Databases* (o *MySQL Databases*) → **Crea database**: `agenda` → diventa `UTENTE_agenda`.
 2. *phpMyAdmin* → database `UTENTE_agenda` → *Operazioni* → *Codifica caratteri*: **utf8mb4_unicode_ci** → *Esegui*.
    La prima migrazione controlla questo valore e si ferma se è diverso.
-3. **Crea due utenti** con password lunghe (almeno 24 caratteri) composte **solo da lettere e numeri**: finiscono in un indirizzo di connessione, dove i simboli andrebbero codificati.
+3. **Crea due utenti** con password lunghe (almeno 24 caratteri), preferibilmente **solo lettere e numeri**. Se contengono simboli, nelle variabili `DATABASE_URL`/`MIGRATIONS_DATABASE_URL` vanno codificati: `;`→`%3B`, `,`→`%2C`, `@`→`%40`, `?`→`%3F`, `(`→`%28`, `)`→`%29`, `]`→`%5D`, `$`→`%24`, `#`→`%23`, `/`→`%2F`, `:`→`%3A`, `%`→`%25`. La `@` prima di `localhost` resta com'è.
    - `agmigr` → `UTENTE_agmigr`: per le migrazioni.
    - `agapp` → `UTENTE_agapp`: per l'applicazione.
 4. **Aggiungi gli utenti al database:**
@@ -52,7 +52,9 @@ Nella guida `UTENTE` è il nome utente cPanel. cPanel antepone `UTENTE_` ai nomi
    Con `AUTO_MIGRATE=1` le migrazioni partono all'avvio dell'app con l'utente `agmigr`. Subito dopo, l'indirizzo con quelle credenziali viene tolto dalla memoria del processo: il resto dell'applicazione usa solo `agapp`.
 3. **File:** *File Manager* → cartella `agenda-api` → elimina i file di esempio creati da cPanel (non la cartella `tmp`) → *Upload* di `agenda-api-cpanel.zip` → *Extract* → elimina lo zip.
    Il pacchetto si crea con `backend/scripts/build-cpanel-api.sh` oppure si scarica dagli artifact del workflow.
-4. Torna in *Setup Python App* → matita sull'app → in *Configuration files* inserisci `requirements.txt` → **Run Pip Install** → **Restart**.
+4. **Dipendenze:** *Setup Python App* → matita sull'app → *Execute python script*: `install_deps.py` → **Run Script**. Alla fine tutte le righe devono essere `OK`.
+   Su Netsons il pulsante *Run Pip Install* può terminare senza installare nulla (verificato il 17/11/2026), per questo si usa lo script incluso nel pacchetto.
+   Poi **Restart**.
 5. **Verifica:** `https://agenda.corenexus.it/api/v1/health/ready` deve rispondere `{"status":"ok"}`.
 
 ## 4. Sito (Setup Node.js App)
@@ -84,14 +86,17 @@ Configurazione, una volta sola:
    `FTP_SERVER` (lo stesso di Presenze), `FTP_API_USERNAME`, `FTP_API_PASSWORD`, `FTP_WEB_USERNAME`, `FTP_WEB_PASSWORD`.
 4. GitHub → *Actions* → *Deploy cPanel* → **Run workflow** per il primo rilascio.
 
-Se cambiano le dipendenze il workflow lo segnala con un avviso: in cPanel clicca *Run Pip Install* (API) o *Run NPM Install* (sito) e poi *Restart*.
+Se cambiano le dipendenze il workflow lo segnala con un avviso: in cPanel esegui `install_deps.py` con *Execute python script* (API) oppure *Run NPM Install* (sito), poi *Restart*.
 
 ## 6. Se non parte
 - **Log:** file `stderr.log` nelle cartelle `agenda-api` e `agenda-web`.
 - *"l'utente applicativo ha privilegi sullo schema"*: `UTENTE_agapp` ha privilegi in più. Lasciagli solo SELECT, INSERT, UPDATE, DELETE.
 - *"Il database usa il set di caratteri …"*: ripeti il punto 2.2 (utf8mb4).
 - *"l'URL del database deve iniziare con mysql+pymysql://"*: controlla `DATABASE_URL` e `MIGRATIONS_DATABASE_URL`.
-- *Access denied*: password errata, oppure utente non aggiunto al database.
+- *Access denied*: password errata (simboli non codificati?), oppure utente non aggiunto al database.
+- *ModuleNotFoundError*: dipendenze non installate, esegui `install_deps.py` (punto 3.4).
+- *"schema del database alla versione …"*: le migrazioni non sono state applicate. Verifica `AUTO_MIGRATE=1` e `MIGRATIONS_DATABASE_URL`, poi *Restart*.
+- Nel log può comparire `auto_migrate_skipped`: è normale quando Passenger ricarica l'app dopo che le migrazioni sono già state applicate.
 
 ## 7. Backup
 I backup completi di cPanel includono database e cartelle. Inoltre, ogni tanto: *phpMyAdmin* → `UTENTE_agenda` → *Esporta*, e conserva il file fuori dal server. Una procedura automatica con verifica (come in Presenze) arriverà con lo Sprint 7.

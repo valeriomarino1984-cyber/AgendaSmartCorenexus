@@ -54,7 +54,7 @@ jobs:
       - name: Avvisa se le dipendenze sono cambiate
         run: |
           if git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -qx backend/uv.lock; then
-            echo "::warning::Dipendenze Python cambiate: in cPanel → Setup Python App → agenda-api clicca 'Run Pip Install' e poi 'Restart'."
+            echo "::warning::Dipendenze Python cambiate: in cPanel → Setup Python App → Execute python script: install_deps.py, poi Restart."
           fi
       - name: Verifica la cartella di destinazione
         run: .github/scripts/verify-ftp-target.sh .agenda-api-deploy-target "agenda-api"

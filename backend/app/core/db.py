@@ -18,6 +18,10 @@ class UnsafeDatabaseUserError(RuntimeError):
     """L'applicazione è connessa con un utente che può modificare lo schema."""
 
 
+class SchemaOutOfDateError(RuntimeError):
+    """Lo schema del database non corrisponde alla versione del codice."""
+
+
 # Privilegi che l'utente applicativo NON deve avere: lo schema si cambia solo con le migrazioni.
 _FORBIDDEN_PRIVILEGES = (
     "ALL PRIVILEGES",
@@ -96,6 +100,26 @@ class Database:
         if found:
             raise UnsafeDatabaseUserError(
                 "l'utente applicativo ha privilegi sullo schema: " + ", ".join(sorted(found))
+            )
+
+    def verify_schema_revision(self, expected: str | None) -> None:
+        """Rifiuta l'avvio se le migrazioni non sono state applicate (o il codice è più vecchio)."""
+        with self.engine.connect() as conn:
+            exists = conn.execute(
+                text(
+                    "SELECT COUNT(*) FROM information_schema.tables "
+                    "WHERE table_schema = DATABASE() AND table_name = 'alembic_version'"
+                )
+            ).scalar()
+            current = (
+                conn.execute(text("SELECT version_num FROM alembic_version")).scalar()
+                if exists
+                else None
+            )
+        if current != expected:
+            raise SchemaOutOfDateError(
+                f"schema del database alla versione {current!r}, il codice richiede {expected!r}: "
+                "impostare AUTO_MIGRATE=1 e MIGRATIONS_DATABASE_URL e riavviare l'app"
             )
 
     def dispose(self) -> None:

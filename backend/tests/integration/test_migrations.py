@@ -4,7 +4,10 @@ import pytest
 from alembic import command
 from alembic.script import ScriptDirectory
 
+from app.core.config import Settings
+from app.core.db import SchemaOutOfDateError
 from app.core.migrate import alembic_config, migrate_on_startup
+from app.main import create_app
 
 
 def test_single_head() -> None:
@@ -34,8 +37,18 @@ def test_without_auto_migrate_credentials_are_dropped(monkeypatch: pytest.Monkey
     assert "MIGRATIONS_DATABASE_URL" not in os.environ
 
 
-def test_auto_migrate_requires_url(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_reload_without_url_skips_instead_of_failing(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Passenger può ricaricare il file di avvio dopo che le credenziali sono già state rimosse."""
     monkeypatch.setenv("AUTO_MIGRATE", "1")
     monkeypatch.delenv("MIGRATIONS_DATABASE_URL")
-    with pytest.raises(RuntimeError, match="MIGRATIONS_DATABASE_URL"):
-        migrate_on_startup()
+    migrate_on_startup()  # non solleva
+
+
+def test_app_refuses_outdated_schema(settings: Settings) -> None:
+    cfg = alembic_config()
+    command.downgrade(cfg, "base")
+    try:
+        with pytest.raises(SchemaOutOfDateError, match="AUTO_MIGRATE"):
+            create_app(settings)
+    finally:
+        command.upgrade(cfg, "head")
