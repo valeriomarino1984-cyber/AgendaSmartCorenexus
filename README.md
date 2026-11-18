@@ -2,7 +2,7 @@
 
 SaaS multi-tenant per la gestione degli appuntamenti con notifiche automatiche tramite WhatsApp Business Platform (Cloud API ufficiale).
 
-**Stato:** Sprint 0 completato e adattato a Netsons cPanel (MariaDB). Prossimo: Sprint 1, autenticazione e tenant.
+**Stato:** Sprint 1 completato (accesso, studi, ruoli, collaboratori). Prossimo: Sprint 2, sedi, professionisti, prestazioni e clienti. Report: [`docs/08-report-sprint-1.md`](docs/08-report-sprint-1.md).
 
 ## Struttura
 
@@ -21,6 +21,7 @@ docs/       analisi, schema, piano, decisioni, report di sprint
 5. [`docs/05-report-sprint-0.md`](docs/05-report-sprint-0.md): report Sprint 0
 6. [`docs/06-design-system.md`](docs/06-design-system.md): design system (condiviso con Presenze)
 7. [`docs/07-deploy-netsons.md`](docs/07-deploy-netsons.md): **installazione su Netsons cPanel** e deploy automatico
+8. [`docs/08-report-sprint-1.md`](docs/08-report-sprint-1.md): report Sprint 1
 
 ## Modello di sicurezza del database (da leggere prima di contribuire)
 
@@ -41,21 +42,29 @@ Requisiti: MariaDB 10.6+ (o MySQL 8), Python 3.11+ con [uv](https://docs.astral.
 mariadb -uroot < infra/db/mariadb-users.sql
 ```
 
-2. Avvio dell'API (le migrazioni partono all'avvio con `AUTO_MIGRATE=1`):
+2. Migrazioni e avvio dell'API (in sviluppo le migrazioni si lanciano a mano; `AUTO_MIGRATE` vale solo per l'avvio su cPanel tramite `passenger_wsgi.py`):
 
 ```bash
 cd backend && uv sync
 ```
 
 ```bash
-AUTO_MIGRATE=1 MIGRATIONS_DATABASE_URL=mysql+pymysql://agenda_migr:migr_dev@127.0.0.1:3306/agenda_test DATABASE_URL=mysql+pymysql://agenda_app:app_dev@127.0.0.1:3306/agenda_test uv run uvicorn app.main:create_app --factory --reload
+MIGRATIONS_DATABASE_URL=mysql+pymysql://agenda_migr:migr_dev@127.0.0.1:3306/agenda_test uv run alembic upgrade head
 ```
+
+```bash
+SIGNUP_OPEN=true EMAIL_BACKEND=file DATABASE_URL=mysql+pymysql://agenda_app:app_dev@127.0.0.1:3306/agenda_test uv run uvicorn app.main:create_app --factory --reload
+```
+
+Con `EMAIL_BACKEND=file` le email (conferma, password, inviti) vengono salvate in `backend/var/mail` invece di essere inviate.
 
 3. Frontend:
 
 ```bash
 cd frontend && pnpm install && pnpm dev
 ```
+
+In sviluppo `/api` viene inoltrato dal frontend al backend su `http://localhost:8000` (variabile `AGENDA_API_DEV_URL` per cambiarlo).
 
 ## Test
 
@@ -74,6 +83,10 @@ cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy
 ```bash
 cd frontend && pnpm lint && pnpm typecheck && pnpm build
 ```
+
+## Test end-to-end (browser)
+
+Il flusso completo di accesso (registrazione, conferma email, impostazioni, invito, ruoli, uscita) si prova con `frontend/e2e/flusso-accesso.cjs`: le istruzioni sono in testa al file. Le email vengono scritte su file (`EMAIL_BACKEND=file`) e lette dal test.
 
 ## Deploy
 

@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // In basso a sinistra coprirebbe l'account nella barra laterale (solo sviluppo).
+  devIndicators: { position: "bottom-right" },
   turbopack: {
     rules: {
       "*.css": {
