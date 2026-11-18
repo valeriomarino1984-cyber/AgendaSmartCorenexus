@@ -5,6 +5,12 @@ const http = require("http");
 const path = require("path");
 const next = require("next");
 
+// Cache delle pagine che Next.js scrive su disco (.next/server/route-cache): il deploy non la
+// tocca e sopravvive ai riavvii, quindi dopo un aggiornamento potrebbe servire pagine della
+// versione precedente. La scrittura è disattivata (isrFlushToDisk: false in next.config.js);
+// per sicurezza la cartella viene svuotata a ogni avvio.
+fs.rmSync(path.join(__dirname, ".next", "server", "route-cache"), { recursive: true, force: true });
+
 const port = Number(process.env.PORT) || 3000;
 const hostname = "localhost";
 const app = next({ dev: false, dir: __dirname, hostname, port });

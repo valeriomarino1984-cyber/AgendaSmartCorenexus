@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // Il server non riscrive su disco le pagine in cache: su cPanel il deploy carica i file mentre
+  // il processo è acceso, che altrimenti poteva rimettere su disco la versione precedente.
+  experimental: { isrFlushToDisk: false },
   // In basso a sinistra coprirebbe l'account nella barra laterale (solo sviluppo).
   devIndicators: { position: "bottom-right" },
   turbopack: {

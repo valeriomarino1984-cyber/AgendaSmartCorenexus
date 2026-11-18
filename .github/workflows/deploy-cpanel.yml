@@ -72,6 +72,14 @@ jobs:
           exclude: |
             **/.git*
             **/.git*/**
+            tmp/restart.txt
+
+      - name: Riavvio (file di riavvio caricato per ultimo)
+        run: |
+          curl --silent --show-error --fail --ssl-reqd --ftp-create-dirs --retry 3 --retry-delay 10 \
+            --user "$FTP_USERNAME:$FTP_PASSWORD" -T backend/dist/cpanel-api/tmp/restart.txt \
+            "ftp://$FTP_SERVER/tmp/restart.txt"
+          echo "Riavvio richiesto."
 
   web:
     needs: api
@@ -124,11 +132,20 @@ jobs:
           timeout: 120000
           local-dir: ./frontend/dist/cpanel-web/
           server-dir: ./
-          state-name: .agenda-web-deploy-state.json
+          # Nome nuovo (v2): forza un ricaricamento completo una volta, dopo che il processo
+          # precedente aveva riscritto su disco la home vecchia (vedi isrFlushToDisk).
+          state-name: .agenda-web-deploy-state-v2.json
           exclude: |
             **/.git*
             **/.git*/**
             node_modules/**
+            tmp/restart.txt
+      - name: Riavvio (file di riavvio caricato per ultimo)
+        run: |
+          curl --silent --show-error --fail --ssl-reqd --ftp-create-dirs --retry 3 --retry-delay 10 \
+            --user "$FTP_USERNAME:$FTP_PASSWORD" -T frontend/dist/cpanel-web/tmp/restart.txt \
+            "ftp://$FTP_SERVER/tmp/restart.txt"
+          echo "Riavvio richiesto."
       - name: Controllo dopo il rilascio
         run: |
           # Sito e API rispondono, e la home punta a CSS/JS che esistono davvero (se l'app non
