@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     smtp_password: SecretStr | None = None
     smtp_timeout_seconds: int = Field(default=15, ge=1, le=60)
 
+    # Visite online: una stanza con nome casuale per ogni appuntamento, sotto questo indirizzo.
+    # Si può passare a un servizio con server UE o a un Jitsi proprio senza toccare il codice.
+    video_base_url: str = "https://meet.jit.si"
+
     sentry_dsn: SecretStr | None = None
     sentry_traces_sample_rate: float = Field(default=0.0, ge=0.0, le=1.0)
 
@@ -67,7 +71,7 @@ class Settings(BaseSettings):
     def _production_guards(self) -> Settings:
         if not self.is_production_like:
             return self
-        for name in ("app_base_url", "public_booking_base_url"):
+        for name in ("app_base_url", "public_booking_base_url", "video_base_url"):
             if not getattr(self, name).startswith("https://"):
                 raise ValueError(f"{name} deve usare https in ambiente {self.environment}")
         if "*" in self.cors_origins:
