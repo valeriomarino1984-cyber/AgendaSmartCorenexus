@@ -18,6 +18,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return headerRules();
   },
+  // Solo in sviluppo: /api va al backend locale. In produzione su cPanel /api è servito
+  // direttamente dall'app Python (stesso dominio), quindi niente inoltro.
+  async rewrites() {
+    if (process.env.NODE_ENV !== "development") return [];
+    const target = process.env.AGENDA_API_DEV_URL ?? "http://localhost:8000";
+    return [{ source: "/api/:path*", destination: `${target}/api/:path*` }];
+  },
 };
 
 export default nextConfig;

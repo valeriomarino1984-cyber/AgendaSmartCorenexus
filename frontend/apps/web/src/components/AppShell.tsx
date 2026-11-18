@@ -18,7 +18,7 @@ export function AppShell({
   children,
 }: {
   items: NavItem[];
-  studioName: string;
+  studioName: ReactNode;
   roleLabel: string;
   userName: string;
   account?: ReactNode;
@@ -49,7 +49,10 @@ export function AppShell({
       <div className="min-w-0">
         <header className="glass sticky top-0 z-20 flex h-12 items-center justify-between border-b border-ink/10 px-4 lg:hidden">
           <Logo href="/app" />
-          <Monogram name={userName} size={30} />
+          <div className="flex items-center gap-3">
+            {account && <div className="flex items-center gap-3 t-subhead">{account}</div>}
+            <Monogram name={userName} size={30} />
+          </div>
         </header>
         <main className="mx-auto max-w-6xl space-y-8 px-4 pt-6 pb-28 sm:px-6 lg:px-10 lg:pt-12 lg:pb-8">
           {banner}

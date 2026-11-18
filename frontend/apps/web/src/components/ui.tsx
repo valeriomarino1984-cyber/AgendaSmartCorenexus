@@ -65,15 +65,7 @@ export function PageHeader({ title, meta, actions }: { title: ReactNode; meta?: 
   );
 }
 
-export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
-  return (
-    <label className="block space-y-1.5">
-      <span className="block px-1 t-footnote font-medium text-ink-3">{label}</span>
-      {children}
-      {hint && <span className="block px-1 t-caption text-ink-3">{hint}</span>}
-    </label>
-  );
-}
+export { Field } from "./Field";
 
 export function Notice({ state }: { state: { ok?: boolean; error?: string; message?: string; detail?: string } }) {
   if (state.error)

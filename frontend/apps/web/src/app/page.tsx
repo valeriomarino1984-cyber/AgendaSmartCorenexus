@@ -81,7 +81,9 @@ export default function Home() {
               Domande
             </a>
           </nav>
-          <span className="rounded-full bg-accent/12 px-3 py-1 t-footnote font-semibold text-accent">In arrivo</span>
+          <a href="/accedi" className="rounded-full bg-accent px-4 py-1.5 t-footnote font-semibold text-white transition hover:bg-accent-hover">
+            Accedi
+          </a>
         </div>
         <span className="scroll-bar" aria-hidden />
       </header>
