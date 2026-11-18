@@ -1,12 +1,14 @@
 import { Suspense } from "react";
 import { AuthShell, FormSkeleton } from "@/components/AuthShell";
+import { AreaSwitch } from "@/components/auth/AreaSwitch";
 import { LoginForm, SignupLink } from "@/components/auth/LoginForm";
 
-export const metadata = { title: "Accedi" };
+export const metadata = { title: "Login professionisti" };
 
 export default function Page() {
   return (
-    <AuthShell kicker="Area studio" title="Accedi" subtitle="Agenda, clienti e collaboratori del tuo studio." footer={<SignupLink />}>
+    <AuthShell kicker="Area professionisti" title="Login professionisti" subtitle="Agenda, clienti e collaboratori del tuo studio." footer={<SignupLink />}>
+      <AreaSwitch current="professionisti" />
       <Suspense fallback={<FormSkeleton />}>
         <LoginForm />
       </Suspense>

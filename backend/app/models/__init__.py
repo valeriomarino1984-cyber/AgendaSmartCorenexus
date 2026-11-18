@@ -25,3 +25,4 @@ from app.models.catalog import (  # noqa: F401
     Service,
     ServiceProfessional,
 )
+from app.models.client_portal import ClientLoginToken, ClientSession  # noqa: F401
