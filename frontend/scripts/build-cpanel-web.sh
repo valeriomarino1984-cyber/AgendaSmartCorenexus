@@ -2,6 +2,7 @@
 # Pacchetto per cPanel "Setup Node.js App": app compilata (.next), file pubblici, server.js e un
 # package.json con le sole dipendenze di runtime a versione fissa ("Run NPM Install" le installa).
 set -e
+export NEXT_TELEMETRY_DISABLED=1
 cd "$(dirname "$0")/.."
 pnpm --filter web build
 WEB=apps/web
@@ -13,7 +14,9 @@ rm -rf "$OUT/.next/cache" "$OUT/.next/dev"
 # Marcatore vuoto scritto da Next.js in fase di build e non letto all'avvio: i file da 0 byte
 # interrompono il caricamento FTPS su Netsons (errore TLS sul canale dati).
 rm -f "$OUT/.next/turbopack"
-cp -r "$WEB/public" "$OUT/public"
+# public può non esistere nel repository (Git non salva le cartelle vuote).
+mkdir -p "$OUT/public"
+if [ -d "$WEB/public" ]; then cp -r "$WEB/public/." "$OUT/public/"; fi
 cp deploy/cpanel/server.js deploy/cpanel/next.config.js "$WEB/security-headers.js" "$OUT/"
 # Versioni esatte installate (dal lockfile pnpm), solo dipendenze di produzione.
 pnpm --filter web list --prod --json --depth 0 > dist/web-deps.json
