@@ -129,12 +129,19 @@ jobs:
             node_modules/**
       - name: Controllo dopo il rilascio
         run: |
-          for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
-            web=$(curl -s -o /dev/null -w '%{http_code}' "$AGENDA_URL/" || true)
+          # Sito e API rispondono, e la home punta a CSS/JS che esistono davvero (se l'app non
+          # si fosse riavviata servirebbe la versione precedente, con file ormai cancellati).
+          for i in $(seq 1 18); do
+            web=$(curl -s -o home.html -w '%{http_code}' "$AGENDA_URL/?verifica=$GITHUB_RUN_ID-$i" || true)
             api=$(curl -s -o /dev/null -w '%{http_code}' "$AGENDA_URL/api/v1/health/ready" || true)
-            echo "Tentativo $i: sito $web, API $api"
-            if [ "$web" = "200" ] && [ "$api" = "200" ]; then echo "Rilascio verificato."; exit 0; fi
+            missing=0
+            for asset in $(grep -oE '/_next/static/[^"]+[.](css|js)' home.html 2>/dev/null | sort -u); do
+              code=$(curl -s -o /dev/null -w '%{http_code}' "$AGENDA_URL$asset" || true)
+              [ "$code" = "200" ] || { missing=$((missing+1)); echo "  mancante ($code): $asset"; }
+            done
+            echo "Tentativo $i: sito $web, API $api, risorse mancanti $missing"
+            if [ "$web" = "200" ] && [ "$api" = "200" ] && [ "$missing" = "0" ]; then echo "Rilascio verificato."; exit 0; fi
             sleep 10
           done
-          echo "::error::Dopo il rilascio sito o API non rispondono 200. Controlla stderr.log nelle cartelle agenda-web e agenda-api."
+          echo "::error::Dopo il rilascio sito, API o risorse della home non rispondono. In cPanel → Setup Node.js App prova 'Restart' e controlla stderr.log in agenda-web e agenda-api."
           exit 1
