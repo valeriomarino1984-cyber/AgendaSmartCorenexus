@@ -1,12 +1,17 @@
 import type { CSSProperties, ReactNode } from "react";
+import Link from "next/link";
 import {
-  BellRing, CalendarClock, CalendarRange, Clock3, Globe, Lock, ShieldCheck, Sparkles, Stethoscope, Users, UserCog, Video,
+  ArrowUpRight, BellRing, CalendarClock, CalendarRange, Clock3, Globe, Lock, Mail, MessageCircle, Phone, ShieldCheck, Sparkles, Stethoscope,
+  Users, UserCog, Video,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { SiteFooter } from "@/components/SiteFooter";
 import { Motion } from "@/components/Motion";
 import { Splash } from "@/components/Splash";
 import { LaptopMock, PhoneMock } from "@/components/landing/Mocks";
 import { DragAgendaMock, SlotsMock, VideoCallMock } from "@/components/landing/Showcase";
+import { WhatsAppBanner } from "@/components/landing/WhatsAppBanner";
+import { CONTACT_PAGE, EMAIL, PHONE_DISPLAY, PHONE_TEL, WHATSAPP_URL } from "@/lib/contacts";
 import { IconTile, btnPrimary, linkCls } from "@/components/ui";
 
 const v = (name: string, value: string) => ({ [name]: value }) as CSSProperties;
@@ -144,7 +149,7 @@ function Checks({ items }: { items: string[] }) {
   );
 }
 
-export default function Home() {
+export default async function Home() {
   return (
     <>
       <Splash />
@@ -152,13 +157,18 @@ export default function Home() {
         <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-4 sm:px-6">
           <Logo />
           <nav className="hidden gap-7 t-subhead text-ink-2 md:flex">
-            {[["#funzioni", "Funzioni"], ["#agenda", "Agenda"], ["#visite-online", "Visite online"], ["#professioni", "Professioni"], ["#domande", "Domande"]].map(([href, label]) => (
+            {[["#funzioni", "Funzioni"], ["#agenda", "Agenda"], ["#visite-online", "Visite online"], ["#professioni", "Professioni"], ["#contatti", "Contatti"]].map(([href, label]) => (
               <a key={href} href={href} className="nav-u hover:text-ink">{label}</a>
             ))}
           </nav>
-          <a href="/accedi" className="rounded-full bg-accent px-4 py-1.5 t-footnote font-semibold text-white transition hover:bg-accent-hover">
-            Accedi
-          </a>
+          <span className="flex items-center gap-3">
+            <Link href="/area-clienti" className="hidden t-footnote font-semibold text-link hover:underline sm:inline">
+              Area clienti
+            </Link>
+            <Link href="/accedi" className="rounded-full bg-accent px-4 py-1.5 t-footnote font-semibold text-white transition hover:bg-accent-hover">
+              Accedi
+            </Link>
+          </span>
         </div>
         <span className="scroll-bar" aria-hidden />
       </header>
@@ -379,26 +389,58 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="relative overflow-hidden bg-paper px-4 py-24 text-center">
+        <section id="contatti" className="relative scroll-mt-12 overflow-hidden bg-paper px-4 py-20 text-center sm:py-28">
           <div className="aurora aurora-fill" aria-hidden>
             <span />
             <span />
             <span />
           </div>
           <div className="relative z-10">
-            <h2 className="text-[34px] leading-tight font-bold tracking-tight sm:text-[48px]">La tua agenda, finalmente in ordine.</h2>
-            <p className="mx-auto mt-3 max-w-xl text-[19px] text-ink-2">Accedi all&apos;area riservata del tuo studio.</p>
-            <a href="/accedi" className={`${btnPrimary} cta shine shine-auto mt-8 h-12 px-8 t-body`} style={v("--sd", "1s")}>
-              Accedi <span className="cta-arrow">›</span>
-            </a>
+            <h2 className="text-[40px] font-semibold tracking-tight sm:text-[56px]">Prova Agenda.</h2>
+            <p className="mx-auto mt-3 max-w-xl text-[19px] leading-snug text-ink-2">
+              Raccontaci il tuo studio: ti prepariamo una prova gratuita, configurata con le tue prestazioni, i tuoi orari e il tuo team.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+              <a href={CONTACT_PAGE} target="_blank" rel="noopener noreferrer" className={`${btnPrimary} cta shine shine-auto h-12 px-7 t-body`} style={v("--sd", "1s")}>
+                Richiedi una prova gratuita
+                <ArrowUpRight className="cta-arrow h-[18px] w-[18px]" />
+              </a>
+              <Link href="/accedi" className={`${linkCls} nudge-link text-[17px]`}>
+                Hai già un account? Accedi <span className="nudge">›</span>
+              </Link>
+            </div>
+
+            <div data-stagger className="mx-auto mt-12 grid max-w-[880px] gap-3 text-left sm:grid-cols-3">
+              {[
+                { icon: <Phone />, label: "Telefono", value: PHONE_DISPLAY, href: PHONE_TEL, ext: false },
+                { icon: <Mail />, label: "Email", value: EMAIL, href: `mailto:${EMAIL}`, ext: false },
+                { icon: <MessageCircle />, label: "WhatsApp", value: "Risposta rapida", href: WHATSAPP_URL, ext: true },
+              ].map((c) => (
+                <a
+                  key={c.label}
+                  href={c.href}
+                  {...(c.ext ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className="lift flex items-center gap-3 rounded-[18px] bg-card px-4 py-3.5 shadow-card transition hover:bg-paper"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent/10 text-accent [&>svg]:h-5 [&>svg]:w-5">{c.icon}</span>
+                  <span className="min-w-0">
+                    <span className="block t-footnote text-ink-3">{c.label}</span>
+                    <span className="block truncate font-semibold">{c.value}</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+
+            <div data-reveal className="mt-12">
+              <WhatsAppBanner />
+            </div>
           </div>
         </section>
 
-        <footer className="border-t border-rule bg-paper px-4 py-8 text-center t-footnote text-ink-3">
-          CoreNexus Agenda · in sviluppo
-        </footer>
         <Motion />
       </main>
+
+      <SiteFooter />
     </>
   );
 }

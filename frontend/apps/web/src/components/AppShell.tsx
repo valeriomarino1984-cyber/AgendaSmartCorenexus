@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { BottomNav, SideNav, type NavItem } from "./AppNav";
 import { Logo } from "./Logo";
 import { Monogram } from "./ui";
+import { VersionFooter } from "./VersionFooter";
 
 /**
  * Struttura dell'area riservata (come Presenze): barra laterale traslucida su desktop,
@@ -57,6 +58,7 @@ export function AppShell({
         <main className="mx-auto max-w-6xl space-y-8 px-4 pt-6 pb-28 sm:px-6 lg:px-10 lg:pt-12 lg:pb-8">
           {banner}
           {children}
+          <VersionFooter className="px-0 pt-4" />
         </main>
       </div>
       <BottomNav items={items} />

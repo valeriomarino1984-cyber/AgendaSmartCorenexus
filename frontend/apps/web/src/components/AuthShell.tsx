@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo, LogoMark } from "./Logo";
+import { VersionFooter } from "./VersionFooter";
 
 /** Pagine di accesso nello stile di Presenze: barra in vetro, logo grande, titolo e modulo al centro. */
 export function AuthShell({
@@ -38,6 +39,7 @@ export function AuthShell({
           {footer && <div className="mt-6 text-center t-subhead text-ink-3">{footer}</div>}
         </div>
       </div>
+      <VersionFooter />
     </main>
   );
 }
