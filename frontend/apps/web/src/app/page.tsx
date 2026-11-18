@@ -10,6 +10,7 @@ import { Motion } from "@/components/Motion";
 import { Splash } from "@/components/Splash";
 import { LaptopMock, PhoneMock } from "@/components/landing/Mocks";
 import { DragAgendaMock, SlotsMock, VideoCallMock } from "@/components/landing/Showcase";
+import { RotatingWords } from "@/components/landing/RotatingWords";
 import { WhatsAppBanner } from "@/components/landing/WhatsAppBanner";
 import { CONTACT_PAGE, EMAIL, PHONE_DISPLAY, PHONE_TEL, WHATSAPP_URL } from "@/lib/contacts";
 import { IconTile, btnPrimary, linkCls } from "@/components/ui";
@@ -75,6 +76,19 @@ const FEATURES: { icon: ReactNode; tile: string; title: string; text: string; st
     text: "Email e WhatsApp con le API ufficiali di Meta, con il link della visita online e i pulsanti Conferma, Sposta, Disdici.",
     status: "soon",
   },
+];
+
+const PROFESSIONS_HERO = [
+  "fisioterapisti",
+  "nutrizionisti",
+  "psicologi",
+  "osteopati",
+  "psicoterapeuti",
+  "biologi nutrizionisti",
+  "massoterapisti",
+  "centri benessere",
+  "studi medici",
+  "personal trainer",
 ];
 
 const PROFESSIONS = ["Fisioterapisti", "Nutrizionisti", "Psicologi", "Osteopati", "Psicoterapeuti", "Biologi nutrizionisti", "Massoterapisti", "Centri multidisciplinari", "Studi professionali", "Personal trainer"];
@@ -181,15 +195,11 @@ export default async function Home() {
             <span />
           </div>
           <div className="relative z-10">
-            <p className="hero-seq t-headline text-accent">
+            <p className="hero-seq text-[30px] leading-[1.15] font-bold tracking-[-0.03em] text-ink-2 sm:text-[52px]">
               Per{" "}
-              <span className="word-cycle" aria-label="studi e liberi professionisti">
-                {["fisioterapisti", "nutrizionisti", "psicologi", "osteopati", "studi e centri"].map((w, i) => (
-                  <span key={w} aria-hidden style={v("--i", String(i))}>{w}</span>
-                ))}
-              </span>
+              <RotatingWords label="fisioterapisti, nutrizionisti, psicologi, osteopati e altri professionisti" words={PROFESSIONS_HERO} />
             </p>
-            <h1 className="hero-seq mt-2 text-[56px] leading-none font-bold tracking-[-0.04em] sm:text-[96px]" style={v("--hd", "0.08s")}>
+            <h1 className="hero-seq mt-3 text-[56px] leading-none font-bold tracking-[-0.04em] sm:text-[96px]" style={v("--hd", "0.08s")}>
               Agenda
             </h1>
             <p className="hero-seq mx-auto mt-4 max-w-2xl text-[24px] leading-tight font-semibold tracking-tight text-ink-3 sm:text-[34px]" style={v("--hd", "0.16s")}>
