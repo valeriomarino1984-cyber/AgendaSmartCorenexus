@@ -65,6 +65,7 @@ jobs:
           username: ${{ secrets.FTP_API_USERNAME }}
           password: ${{ secrets.FTP_API_PASSWORD }}
           protocol: ftps
+          timeout: 120000
           local-dir: ./backend/dist/cpanel-api/
           server-dir: ./
           state-name: .agenda-api-deploy-state.json
@@ -120,6 +121,7 @@ jobs:
           username: ${{ secrets.FTP_WEB_USERNAME }}
           password: ${{ secrets.FTP_WEB_PASSWORD }}
           protocol: ftps
+          timeout: 120000
           local-dir: ./frontend/dist/cpanel-web/
           server-dir: ./
           state-name: .agenda-web-deploy-state.json

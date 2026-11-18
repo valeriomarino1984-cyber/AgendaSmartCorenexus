@@ -4,10 +4,18 @@
 # Richiede FTP_SERVER, FTP_USERNAME, FTP_PASSWORD nell'ambiente.
 MARKER="$1"
 WHAT="$2"
+# Il server FTP di Netsons a volte non risponde per qualche minuto (timeout): si riprova
+# fino a 4 volte, con attese crescenti, prima di arrendersi. Gli altri errori sono immediati.
 set +e
-curl --silent --show-error --fail --ssl-reqd --max-time 60 \
-  --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/$MARKER" --output /dev/null
-code=$?
+for attempt in 1 2 3 4; do
+  curl --silent --show-error --fail --ssl-reqd --connect-timeout 20 --max-time 60 \
+    --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/$MARKER" --output /dev/null
+  code=$?
+  case "$code" in
+    6|7|28) [ "$attempt" -lt 4 ] && { echo "Server FTP non raggiungibile (codice $code), nuovo tentativo tra $((attempt * 30)) s…"; sleep $((attempt * 30)); continue; } ;;
+  esac
+  break
+done
 set -e
 case "$code" in
   0) echo "Cartella di destinazione verificata ($WHAT)." ;;
