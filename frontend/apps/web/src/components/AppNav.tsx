@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  BarChart3, Bell, CalendarDays, Clock3, CreditCard, Globe, Hourglass, LayoutGrid, Settings, Stethoscope, UserRound, Users,
+  BarChart3, Bell, CalendarDays, Clock3, CreditCard, Globe, Hourglass, LayoutGrid, Settings, Stethoscope, UserCog, UserRound, Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -19,6 +19,7 @@ const ICONS = {
   report: BarChart3,
   impostazioni: Settings,
   abbonamento: CreditCard,
+  team: UserCog,
 };
 export type NavIcon = keyof typeof ICONS;
 
@@ -37,21 +38,33 @@ export interface NavItem {
   comingIn?: string;
 }
 
-/** Menu principale dello studio (specifica §15). Le voci con `comingIn` arrivano nelle release successive. */
-export const STUDIO_NAV: NavItem[] = [
-  { href: "/app", label: "Dashboard", short: "Oggi", icon: "dashboard", section: "Panoramica" },
-  { href: "/app/agenda", label: "Agenda", icon: "agenda", section: "Panoramica" },
-  { href: "/app/clienti", label: "Clienti", icon: "clienti", section: "Studio" },
-  { href: "/app/prestazioni", label: "Prestazioni", icon: "prestazioni", mobile: false, section: "Studio" },
-  { href: "/app/professionisti", label: "Professionisti", icon: "professionisti", mobile: false, section: "Studio" },
-  { href: "/app/disponibilita", label: "Disponibilità", icon: "disponibilita", mobile: false, section: "Studio" },
-  { href: "/app/prenotazioni-online", label: "Prenotazioni online", short: "Online", icon: "prenotazioni", mobile: false, section: "Comunicazioni" },
-  { href: "/app/notifiche", label: "Notifiche", icon: "notifiche", section: "Comunicazioni" },
-  { href: "/app/lista-attesa", label: "Lista d'attesa", icon: "attesa", mobile: false, section: "Comunicazioni", comingIn: "R2" },
-  { href: "/app/report", label: "Report", icon: "report", mobile: false, section: "Sistema", comingIn: "R2" },
-  { href: "/app/impostazioni", label: "Impostazioni", icon: "impostazioni", mobile: false, section: "Sistema" },
-  { href: "/app/abbonamento", label: "Abbonamento", icon: "abbonamento", mobile: false, section: "Sistema", comingIn: "R4" },
-];
+/**
+ * Menu principale dello studio (specifica §15). Le voci con `comingIn` sono visibili ma non cliccabili
+ * finché lo sprint indicato non le realizza. "Collaboratori" è riservato al titolare.
+ */
+export function studioNav(role: string): NavItem[] {
+  const items: NavItem[] = [
+    { href: "/app", label: "Dashboard", short: "Oggi", icon: "dashboard", section: "Panoramica" },
+    { href: "/app/agenda", label: "Agenda", icon: "agenda", section: "Panoramica", comingIn: "Sprint 3" },
+    { href: "/app/clienti", label: "Clienti", icon: "clienti", section: "Studio", comingIn: "Sprint 2" },
+    { href: "/app/prestazioni", label: "Prestazioni", icon: "prestazioni", section: "Studio", comingIn: "Sprint 2" },
+    { href: "/app/professionisti", label: "Professionisti", icon: "professionisti", section: "Studio", comingIn: "Sprint 2" },
+    { href: "/app/disponibilita", label: "Disponibilità", icon: "disponibilita", section: "Studio", comingIn: "Sprint 3" },
+    { href: "/app/prenotazioni-online", label: "Prenotazioni online", short: "Online", icon: "prenotazioni", section: "Comunicazioni", comingIn: "Sprint 4" },
+    { href: "/app/notifiche", label: "Notifiche", icon: "notifiche", section: "Comunicazioni", comingIn: "Sprint 5" },
+    { href: "/app/lista-attesa", label: "Lista d'attesa", icon: "attesa", section: "Comunicazioni", comingIn: "R2" },
+    { href: "/app/report", label: "Report", icon: "report", section: "Sistema", comingIn: "R2" },
+    ...(role === "owner"
+      ? [{ href: "/app/collaboratori", label: "Collaboratori", short: "Team", icon: "team" as const, section: "Sistema" }]
+      : []),
+    { href: "/app/impostazioni", label: "Impostazioni", icon: "impostazioni", section: "Sistema" },
+    { href: "/app/abbonamento", label: "Abbonamento", icon: "abbonamento", section: "Sistema", comingIn: "R4" },
+  ];
+  return items;
+}
+
+/** Menu completo con il ruolo di titolare (usato dall'anteprima dei componenti). */
+export const STUDIO_NAV: NavItem[] = studioNav("owner");
 
 function useActive() {
   const path = usePathname();

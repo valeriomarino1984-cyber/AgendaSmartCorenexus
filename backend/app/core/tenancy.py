@@ -25,6 +25,8 @@ from sqlalchemy.sql import visitors
 from app.core.models import Base, TenantScoped
 
 TENANT_KEY = "tenant_id"
+# Motivazione obbligatoria per le rare letture che attraversano più studi (es. al login).
+PLATFORM_KEY = "platform_reason"
 
 
 class MissingTenantContextError(RuntimeError):
@@ -81,6 +83,8 @@ def _filter_by_tenant(state: ORMExecuteState) -> None:
         return  # caricamenti derivati da un oggetto già filtrato
     if not _touches_tenant_data(state):
         return
+    if state.session.info.get(PLATFORM_KEY):
+        return  # accesso di piattaforma esplicito, vedi Database.platform_session()
     tenant_id = state.session.info.get(TENANT_KEY)
     if tenant_id is None:
         raise MissingTenantContextError("accesso a dati di uno studio senza contesto tenant")
@@ -99,6 +103,10 @@ def _check_writes(session: Session, _ctx: Any, _instances: Any) -> None:
     for obj in (*session.new, *session.dirty, *session.deleted):
         if not isinstance(obj, TenantScoped):
             continue
+        if session.info.get(PLATFORM_KEY):
+            raise CrossTenantWriteError(
+                "le sessioni di piattaforma sono in sola lettura sui dati degli studi"
+            )
         if tenant_id is None:
             raise MissingTenantContextError("scrittura su dati di uno studio senza contesto tenant")
         if obj in session.new and obj.tenant_id is None:

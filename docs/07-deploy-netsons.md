@@ -47,6 +47,14 @@ Nella guida `UTENTE` è il nome utente cPanel. cPanel antepone `UTENTE_` ai nomi
    | `PUBLIC_BOOKING_BASE_URL` | `https://agenda.corenexus.it/prenota` |
    | `CORS_ORIGINS` | `["https://agenda.corenexus.it"]` |
    | `LOG_JSON` | `true` |
+   | `EMAIL_BACKEND` | `smtp` (obbligatorio: senza l'API non parte) |
+   | `SMTP_HOST` | es. `mail.corenexus.it` (cPanel → *Account email* → *Configura client*) |
+   | `SMTP_PORT` | `465` |
+   | `SMTP_SECURITY` | `ssl` (oppure `starttls` con porta `587`) |
+   | `SMTP_USERNAME` | es. `no-reply@corenexus.it` |
+   | `SMTP_PASSWORD` | password di quella casella |
+   | `EMAIL_FROM` | `CoreNexus Agenda <no-reply@corenexus.it>` (stesso indirizzo di `SMTP_USERNAME`) |
+   | `SIGNUP_OPEN` | `false` (default). `true` solo per prove o dopo la pubblicazione di condizioni e informativa privacy |
    | `SENTRY_DSN` | facoltativo, progetto Sentry in regione UE |
 
    Con `AUTO_MIGRATE=1` le migrazioni partono all'avvio dell'app con l'utente `agmigr`. Subito dopo, l'indirizzo con quelle credenziali viene tolto dalla memoria del processo: il resto dell'applicazione usa solo `agapp`.
@@ -101,6 +109,11 @@ Se cambiano le dipendenze il workflow lo segnala con un avviso: in cPanel esegui
 ## 7. Backup
 I backup completi di cPanel includono database e cartelle. Inoltre, ogni tanto: *phpMyAdmin* → `UTENTE_agenda` → *Esporta*, e conserva il file fuori dal server. Una procedura automatica con verifica (come in Presenze) arriverà con lo Sprint 7.
 
+## Email (dallo Sprint 1)
+Le email di conferma, password dimenticata e inviti partono via SMTP. La casella più semplice è un account email del cPanel (es. `no-reply@corenexus.it`, *Account email* → *Crea*); i parametri sono in *Configura client email*. Per una buona consegna verifica in cPanel → *Email Deliverability* che SPF e DKIM del dominio siano a posto.
+
+## Registrazione degli studi
+Con `SIGNUP_OPEN=false` (default) la pagina `/registrati` mostra "registrazione chiusa". Per le prove interne impostala a `true`, crea lo studio e poi riportala a `false` (*Restart* dopo ogni modifica). Va aperta al pubblico solo quando saranno pubblicate condizioni del servizio e informativa privacy (punto P4 del piano: revisione legale).
+
 ## In arrivo con gli sprint successivi
-- **Cron** (Sprint 5): invio dei promemoria WhatsApp/email, come `/api/promemoria` di Presenze, con chiave segreta `CRON_SECRET`.
-- **Email** (Sprint 1): parametri SMTP dell'account email di cPanel o di un provider UE.
+- **Cron** (Sprint 5): invio dei promemoria, come `/api/promemoria` di Presenze, con chiave segreta `CRON_SECRET`.

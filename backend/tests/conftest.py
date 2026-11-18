@@ -26,7 +26,7 @@ def _require_env(name: str) -> str:
 def settings() -> Settings:
     _require_env("DATABASE_URL")
     _require_env("MIGRATIONS_DATABASE_URL")
-    return Settings(environment="test", log_json=True)
+    return Settings(environment="test", log_json=True, email_backend="memory", signup_open=True)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -47,3 +47,23 @@ def owner_engine(settings: Settings) -> Iterator[Engine]:
     engine = create_engine(settings.migrations_database_url.get_secret_value(), poolclass=NullPool)
     yield engine
     engine.dispose()
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limits_and_outbox(owner_engine: Engine) -> Iterator[None]:
+    """Ogni test parte senza limiti di frequenza accumulati e con la casella email vuota."""
+    from sqlalchemy import text
+
+    from app.modules.email.sender import MEMORY_OUTBOX
+
+    MEMORY_OUTBOX.clear()
+    with owner_engine.begin() as conn:
+        exists = conn.execute(
+            text(
+                "SELECT COUNT(*) FROM information_schema.tables "
+                "WHERE table_schema = DATABASE() AND table_name = 'rate_limit_events'"
+            )
+        ).scalar()
+        if exists:
+            conn.execute(text("DELETE FROM rate_limit_events"))
+    yield

@@ -6,6 +6,13 @@ from sqlalchemy import Connection, text
 
 from app.core.models import Base, TenantScoped
 
+# Tabelle con tenant_id che NON sono dati di uno studio. Ogni voce va motivata in code review.
+TENANT_GUARD_EXEMPT: dict[str, str] = {
+    "audit_logs": "registro di sicurezza append-only scritto dal sistema; include eventi senza "
+    "studio (es. accessi falliti). Non è esposto da alcuna API: le letture future dovranno "
+    "filtrare esplicitamente per tenant_id.",
+}
+
 
 def tenant_model_tables() -> set[str]:
     return {
@@ -27,7 +34,7 @@ def _tables_with_tenant_id(conn: Connection) -> set[str]:
 
 def find_unguarded_tenant_tables(conn: Connection) -> list[str]:
     """Tabelle con tenant_id che non corrispondono a un modello TenantScoped (niente filtro ORM)."""
-    return sorted(_tables_with_tenant_id(conn) - tenant_model_tables())
+    return sorted(_tables_with_tenant_id(conn) - tenant_model_tables() - TENANT_GUARD_EXEMPT.keys())
 
 
 def find_tenant_tables_without_composite_key(conn: Connection) -> list[str]:
@@ -42,4 +49,4 @@ def find_tenant_tables_without_composite_key(conn: Connection) -> list[str]:
         )
     )
     with_key = {r.table_name for r in rows if r.cols == "tenant_id,id"}
-    return sorted(_tables_with_tenant_id(conn) - with_key)
+    return sorted(_tables_with_tenant_id(conn) - with_key - TENANT_GUARD_EXEMPT.keys())
