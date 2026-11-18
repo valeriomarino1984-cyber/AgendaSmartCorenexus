@@ -4,7 +4,7 @@ import { LogoMark } from "../Logo";
 import { ServiceChip } from "../ui";
 
 /*
- * Illustrazioni della home: NON sono dati reali. Mostrano l'aspetto dell'agenda e del promemoria WhatsApp.
+ * Illustrazioni della home: NON sono dati reali. Mostrano l'aspetto dell'agenda e del promemoria WhatsApp (in arrivo).
  */
 
 const DAYS = ["Lun 16", "Mar 17", "Mer 18", "Gio 19", "Ven 20"];
@@ -34,7 +34,7 @@ export function LaptopMock() {
                 <LogoMark className="h-5 w-5" />
                 <span className="t-footnote font-semibold">Agenda</span>
               </div>
-              {["Dashboard", "Agenda", "Clienti", "Prestazioni", "Notifiche"].map((l) => (
+              {["Dashboard", "Agenda", "Clienti", "Prestazioni", "Disponibilità"].map((l) => (
                 <div key={l} className={`rounded-[6px] px-2 py-1 t-caption ${l === "Agenda" ? "bg-accent text-white" : "text-ink"}`}>
                   {l}
                 </div>
