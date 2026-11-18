@@ -19,7 +19,7 @@
   - 20 richieste all'ora per IP.
 - **Link e sessioni:**
   - link monouso con scadenza, nel database solo l'hash;
-  - sessione di 14 giorni al massimo, che si chiude dopo 3 giorni di inattività.
+  - sessione di 14 giorni al massimo, che si chiude dopo **5 minuti senza attività** (vedi sotto).
 - **Clienti archiviati e studi sospesi:** non ricevono link.
 - **Lettura tra studi:** avviene con una sessione di piattaforma motivata e in sola lettura. La disdetta si scrive con la sessione dello studio dell'appuntamento.
 - **Test:** 7 test di integrazione:
@@ -44,3 +44,8 @@
   - riga con **versione e data** ("Agenda 0.4 · aggiornata al 18/11/2026 · Sviluppato da CoreNexus Technology Solutions"), anche nelle pagine di accesso e nell'area riservata.
 - **Pagina `/novita`** con le versioni 0.1–0.4.
 - **A ogni rilascio** aggiornare `APP_VERSION` e `APP_UPDATED` in `frontend/apps/web/src/lib/brand.ts` e la pagina Novità.
+
+## Uscita automatica (versione 0.5)
+- **Clienti:** timer in alto a destra (5:00). Ogni attività sulla pagina (tocco, tasto, scorrimento) lo fa ripartire, con al massimo una richiesta al minuto al server. 30 secondi prima della scadenza compare l'avviso "Vuoi restare connesso?" con "Resta connesso" ed "Esci ora". Senza risposta l'area si chiude da sola e mostra "Sei uscito per inattività". Il limite vale anche sul server: dopo 5 minuti senza richieste la sessione è chiusa anche se la pagina è rimasta aperta.
+- **Professionisti:** nessun timer a schermo; la sessione si chiude dopo **1 ora** senza attività (prima erano 12 ore). Si cambia con la variabile `SESSION_IDLE_HOURS`.
+- **Test:** cliente dentro a 4 minuti e "Resta connesso" che rinnova; fuori a 6 minuti; professionista dentro a 50 minuti e fuori a 61. Nel browser il timer, l'avviso e l'uscita sono verificati con un orologio simulato.

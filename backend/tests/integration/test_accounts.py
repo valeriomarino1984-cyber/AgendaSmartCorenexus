@@ -232,6 +232,18 @@ def test_idle_session_expires(client: TestClient, owner_engine: Engine) -> None:
     assert client.get("/api/v1/auth/me").status_code == 401
 
 
+def test_staff_session_closes_after_one_idle_hour(client: TestClient, owner_engine: Engine) -> None:
+    email, _ = signup_verified(client)
+    q = (
+        "UPDATE auth_sessions SET last_seen_at = UTC_TIMESTAMP() - INTERVAL {} MINUTE "
+        "WHERE revoked_at IS NULL AND user_id = (SELECT id FROM users WHERE email = :e)"
+    )
+    sql(owner_engine, q.format(50), e=email)
+    assert client.get("/api/v1/auth/me").status_code == 200  # 50 minuti: ancora dentro
+    sql(owner_engine, q.format(61), e=email)
+    assert client.get("/api/v1/auth/me").status_code == 401  # oltre l'ora: fuori
+
+
 def test_csrf_origin_check(client: TestClient) -> None:
     body = {"email": unique_email(), "password": PASSWORD}
     bare = TestClient(client.app)

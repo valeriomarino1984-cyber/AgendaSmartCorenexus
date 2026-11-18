@@ -96,6 +96,12 @@ def cancel(appointment_id: uuid.UUID, ctx: ClientAuth, db: Db, ip: Ip) -> None:
     service.cancel(db, ctx, appointment_id, ip)
 
 
+@router.post("/keepalive")
+def keepalive(ctx: ClientAuth) -> dict[str, object]:
+    """ "Resta connesso": la richiesta stessa rinnova la sessione (vedi service.resolve)."""
+    return {"idle_seconds": int(service.SESSION_IDLE.total_seconds())}
+
+
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(response: Response, ctx: ClientAuth, db: Db, settings: Conf) -> Response:
     service.logout(db, ctx)

@@ -35,7 +35,8 @@ class Settings(BaseSettings):
     signup_open: bool = False
 
     # Sessioni: cookie HttpOnly con token opaco salvato (come hash) nel database.
-    session_idle_hours: int = Field(default=12, ge=1, le=72)
+    # Staff: uscita dopo 1 ora senza attività (i clienti dopo 5 minuti, vedi client_portal).
+    session_idle_hours: int = Field(default=1, ge=1, le=72)
     session_max_days: int = Field(default=14, ge=1, le=90)
 
     # Email transazionali. "smtp" in staging/produzione; "file" e "memory" solo per sviluppo e test.

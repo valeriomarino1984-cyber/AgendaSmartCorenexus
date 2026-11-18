@@ -1,4 +1,4 @@
-import { ArrowUpRight, CalendarRange, Clock3, LockKeyhole, Sparkles, Stethoscope, UserCog, Users, Video } from "lucide-react";
+import { ArrowUpRight, CalendarRange, Clock3, Timer, LockKeyhole, Sparkles, Stethoscope, UserCog, Users, Video } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
@@ -10,6 +10,12 @@ import { CONTACT_PAGE } from "@/lib/contacts";
 export const metadata = { title: `Novità di ${APP_NAME}`, description: `Gli ultimi aggiornamenti di ${APP_NAME}.` };
 
 const releases: { label: string; items: { icon: ReactNode; tile: string; title: string; text: string }[] }[] = [
+  {
+    label: "18 novembre 2026 · versione 0.5",
+    items: [
+      { icon: <Timer />, tile: "bg-sys-orange", title: "Uscita automatica per sicurezza", text: "Nell'area clienti un timer in alto a destra chiude la sessione dopo 5 minuti senza attività, con un avviso 30 secondi prima per restare connessi. I professionisti escono dopo un'ora senza attività." },
+    ],
+  },
   {
     label: "18 novembre 2026 · versione 0.4",
     items: [
