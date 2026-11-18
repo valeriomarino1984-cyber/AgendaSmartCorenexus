@@ -9,7 +9,10 @@ OUT=dist/cpanel-web
 rm -rf "$OUT" dist/agenda-web-cpanel.zip
 mkdir -p "$OUT/tmp"
 cp -r "$WEB/.next" "$OUT/.next"
-rm -rf "$OUT/.next/cache"
+rm -rf "$OUT/.next/cache" "$OUT/.next/dev"
+# Marcatore vuoto scritto da Next.js in fase di build e non letto all'avvio: i file da 0 byte
+# interrompono il caricamento FTPS su Netsons (errore TLS sul canale dati).
+rm -f "$OUT/.next/turbopack"
 cp -r "$WEB/public" "$OUT/public"
 cp deploy/cpanel/server.js deploy/cpanel/next.config.js "$WEB/security-headers.js" "$OUT/"
 # Versioni esatte installate (dal lockfile pnpm), solo dipendenze di produzione.
@@ -28,5 +31,10 @@ fs.writeFileSync(process.argv[1], JSON.stringify({
 }, null, 2) + "\n");
 ' "$OUT/package.json"
 rm -f dist/web-deps.json
+if [ -n "$(find "$OUT" -type f -size 0)" ]; then
+  echo "Errore: file vuoti nel pacchetto (danno errore TLS nel caricamento FTPS):" >&2
+  find "$OUT" -type f -size 0 >&2
+  exit 1
+fi
 (cd "$OUT" && zip -qr ../agenda-web-cpanel.zip .)
 echo "Pacchetto pronto: frontend/dist/agenda-web-cpanel.zip"
