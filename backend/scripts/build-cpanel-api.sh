@@ -9,6 +9,12 @@ mkdir -p "$OUT/tmp"
 cp -r app migrations "$OUT/"
 cp alembic.ini passenger_wsgi.py install_deps.py "$OUT/"
 find "$OUT" -name "__pycache__" -type d -prune -exec rm -rf {} +
+# I file da 0 byte interrompono il caricamento FTPS su Netsons (errore TLS sul canale dati).
+if [ -n "$(find "$OUT" -type f -size 0)" ]; then
+  echo "Errore: file vuoti nel pacchetto (danno errore TLS nel caricamento FTPS):" >&2
+  find "$OUT" -type f -size 0 >&2
+  exit 1
+fi
 uv export --frozen --no-dev --no-hashes --no-emit-project --no-header -q -o "$OUT/requirements.txt"
 (cd "$OUT" && zip -qr ../agenda-api-cpanel.zip .)
 echo "Pacchetto pronto: backend/dist/agenda-api-cpanel.zip"
