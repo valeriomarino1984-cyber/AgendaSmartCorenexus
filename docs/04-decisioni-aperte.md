@@ -77,10 +77,9 @@ Lo studio può poi modificare tutto. Niente sezioni specifiche con dati clinici 
 **Visite online: link generato in automatico**, diverso per ogni appuntamento online, incluso nella conferma e nei promemoria (Sprint 3 e Sprint 5).
 - Ogni prestazione ha una modalità: *in studio*, *online* o *entrambe* (Sprint 2).
 - Proposta tecnica: stanza Jitsi con nome casuale non indovinabile. L'indirizzo base (`VIDEO_BASE_URL`) è configurabile, per passare a un servizio con server UE e contratto di trattamento dati o a un'istanza Jitsi propria senza cambiare il codice.
-- **Da verificare prima del rilascio:**
-  - (1) privacy del servizio pubblico `meet.jit.si`, soprattutto per gli psicologi;
-  - (2) se `meet.jit.si` richiede al professionista di accedere con un account per aprire la stanza;
-  - (3) nessun dato sanitario nel nome della stanza.
+- **Deciso il 18/11/2026: Jitsi pubblico (`meet.jit.si`)** per partire, scelta del titolare che conosce già il servizio.
+  - (3) nessun dato sanitario nel nome della stanza: **fatto** (nome casuale `CN-` + 22 caratteri, ~130 bit, nessun dato di studio o cliente).
+  - (1) privacy del servizio pubblico e (2) accesso con account per aprire la stanza: restano da valutare nell'uso reale; se servirà, si passa a un servizio con server UE o a un Jitsi proprio cambiando solo `VIDEO_BASE_URL`.
 
 **Area piattaforma CoreNexus (`/piattaforma`): dopo lo Sprint 2.** Accesso riservato al team CoreNexus con account nominativi, verifica in due passaggi obbligatoria e registro delle azioni. Da lì:
 - creazione degli studi e invito del titolare;
