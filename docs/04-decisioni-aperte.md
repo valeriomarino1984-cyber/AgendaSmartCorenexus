@@ -47,3 +47,28 @@ Il cPanel offre *Setup Node.js App*, *Setup Python App* e MySQL/MariaDB, ma non 
 - Le "notifiche WhatsApp incluse" dei piani (100/500/1.500/4.000) diventano una **quota di utilizzo del servizio di automazione** CoreNexus, applicata dal worker. Non sono crediti Meta.
 - **Da rivedere commercialmente:** i pacchetti aggiuntivi del §10.3 (es. 250 messaggi a 7,90 €), venduti con questo modello, sarebbero un ampliamento della quota di automazione e lo studio pagherebbe comunque Meta a parte. Va deciso se mantenerli (con una comunicazione chiara) o eliminarli. Il wallet di R2/R4 si riduce quindi a un contatore di quota con soglie dell'80% e di esaurimento.
 - Il modello resta reversibile: passare in futuro a Solution Partner richiede di aggiungere il ledger dei costi, non di riprogettare.
+
+### Profili professionali, visite online e area piattaforma (18/11/2026)
+
+**Profili ("moduli") per professione: profilo preconfigurato.** Stessa applicazione per tutti; ogni studio, in base all'attività, parte con:
+- prestazioni tipiche già create (nome, durata, preparazione, modalità in studio/online);
+- impostazioni predefinite (es. messaggi discreti, visite online attive).
+
+Lo studio può poi modificare tutto. Niente sezioni specifiche con dati clinici (fuori perimetro).
+
+**Profili dedicati iniziali:** fisioterapista, osteopata, nutrizionista (anche biologo nutrizionista), psicologa (anche psicoterapeuta). **Ginecologa esclusa.** Le altre categorie già presenti restano selezionabili con un profilo generico.
+
+**Visite online: link generato in automatico**, diverso per ogni appuntamento online, incluso nella conferma e nei promemoria (Sprint 3 e Sprint 5).
+- Ogni prestazione ha una modalità: *in studio*, *online* o *entrambe* (Sprint 2).
+- Proposta tecnica: stanza Jitsi con nome casuale non indovinabile. L'indirizzo base (`VIDEO_BASE_URL`) è configurabile, per passare a un servizio con server UE e contratto di trattamento dati o a un'istanza Jitsi propria senza cambiare il codice.
+- **Da verificare prima del rilascio:**
+  - (1) privacy del servizio pubblico `meet.jit.si`, soprattutto per gli psicologi;
+  - (2) se `meet.jit.si` richiede al professionista di accedere con un account per aprire la stanza;
+  - (3) nessun dato sanitario nel nome della stanza.
+
+**Area piattaforma CoreNexus (`/piattaforma`): dopo lo Sprint 2.** Accesso riservato al team CoreNexus con account nominativi, verifica in due passaggi obbligatoria e registro delle azioni. Da lì:
+- creazione degli studi e invito del titolare;
+- assegnazione del profilo e attivazione dei moduli;
+- sospensione e riattivazione;
+- gestione della prova;
+- visibilità delle categorie.
