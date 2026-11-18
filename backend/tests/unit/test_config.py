@@ -3,7 +3,7 @@ from pydantic import ValidationError
 
 from app.core.config import Settings
 
-BASE = {"database_url": "postgresql+asyncpg://u:p@h/db"}
+BASE = {"database_url": "mysql+pymysql://u:p@h/db"}
 PROD_OK = {
     **BASE,
     "environment": "production",
@@ -32,17 +32,16 @@ def test_production_guards(override: dict[str, object]) -> None:
 
 
 def test_development_allows_http() -> None:
-    assert Settings.model_validate({**BASE, "environment": "development"}).app_base_url.startswith(
-        "http://"
-    )
+    s = Settings.model_validate({**BASE, "environment": "development"})
+    assert s.app_base_url.startswith("http://")
 
 
-@pytest.mark.parametrize("role", ["App", "app; DROP TABLE x", "1app", ""])
-def test_invalid_db_role_rejected(role: str) -> None:
+@pytest.mark.parametrize("url", ["postgresql://u:p@h/db", "mysql://u:p@h/db", "sqlite:///x.db"])
+def test_only_pymysql_urls(url: str) -> None:
     with pytest.raises(ValidationError):
-        Settings.model_validate({**BASE, "app_db_role": role})
+        Settings.model_validate({"database_url": url})
 
 
 def test_secrets_not_in_repr() -> None:
-    s = Settings(database_url="postgresql+asyncpg://u:supersegreto@h/db")
+    s = Settings.model_validate({"database_url": "mysql+pymysql://u:supersegreto@h/db"})
     assert "supersegreto" not in repr(s)

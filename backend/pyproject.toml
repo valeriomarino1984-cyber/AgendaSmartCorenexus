@@ -2,24 +2,23 @@
 name = "corenexus-agenda-backend"
 version = "0.1.0"
 description = "CoreNexus Agenda – API backend"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115",
-    "uvicorn[standard]>=0.32",
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
-    "sqlalchemy[asyncio]>=2.0.36",
-    "asyncpg>=0.30",
+    "sqlalchemy>=2.0.36",
+    "pymysql>=1.1",          # driver MySQL/MariaDB in puro Python: nessuna compilazione su cPanel
     "alembic>=1.14",
-    "redis>=5.2",
     "structlog>=24.4",
     "sentry-sdk[fastapi]>=2.19",
+    "a2wsgi>=1.10",          # FastAPI (ASGI) dentro Passenger (WSGI) di cPanel
 ]
 
 [dependency-groups]
 dev = [
+    "uvicorn>=0.32",         # solo sviluppo locale
     "pytest>=8.3",
-    "pytest-asyncio>=0.24",
     "httpx>=0.28",
     "ruff>=0.8",
     "mypy>=1.13",
@@ -30,7 +29,7 @@ package = false
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "S", "ASYNC", "SIM", "RUF"]
@@ -40,13 +39,11 @@ select = ["E", "F", "I", "B", "UP", "S", "ASYNC", "SIM", "RUF"]
 "migrations/**" = ["S608"]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 strict = true
 plugins = ["pydantic.mypy"]
 exclude = ["migrations/"]
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 pythonpath = ["."]

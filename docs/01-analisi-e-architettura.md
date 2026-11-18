@@ -1,7 +1,7 @@
 # CoreNexus Agenda – Fase 1: Analisi e architettura proposta
 
 **Riferimento:** Specifica funzionale v1.0 (Novembre 2026)
-**Stato:** PROPOSTA – in attesa di conferma delle decisioni aperte (vedi `04-decisioni-aperte.md`)
+**Stato:** APPROVATA con modifiche: **hosting Netsons cPanel con MariaDB/MySQL** (Decisione 3). Le parti su PostgreSQL, RLS, Redis e Celery sono sostituite come descritto al **§7**.
 
 ---
 
@@ -276,3 +276,24 @@ corenexus-agenda/
 **Esterni:** Meta WhatsApp Cloud API (Graph API, versione fissata in config), provider email transazionale UE, Stripe (R4).
 
 Nessuna dipendenza è stata ancora installata: le versioni esatte verranno fissate nei lockfile all'avvio della Fase 2.
+
+---
+
+## 7. Adattamento a Netsons cPanel (Decisione 3, 17/11/2026)
+
+L'hosting scelto non offre PostgreSQL, Redis né processi sempre attivi. Le scelte dei §3.3–3.5 cambiano così:
+
+| Area | Progetto originale | Su Netsons cPanel | Verifica |
+|---|---|---|---|
+| Database | PostgreSQL 16 | MariaDB/MySQL del cPanel, InnoDB, utf8mb4 | Migrazione baseline che controlla charset e motore |
+| Isolamento tra studi | RLS + ruolo senza BYPASSRLS | `app/core/tenancy.py`: filtro ORM automatico su SELECT/UPDATE/DELETE (anche conteggi, sottoquery, EXISTS), controllo delle scritture prima del flush, rifiuto senza contesto tenant, rifiuto delle query Core su tabelle degli studi | 17 test di sicurezza; controprova con filtro disattivato: 7 falliscono |
+| Seconda barriera nel DB | RLS | Chiavi esterne composite `(tenant_id, id)` + utente applicativo con soli SELECT/INSERT/UPDATE/DELETE (l'API non parte altrimenti) | Test FK cross-tenant, test privilegi, guardia di schema in CI |
+| Doppie prenotazioni | Vincolo di esclusione GiST | Lock `SELECT … FOR UPDATE` sul professionista (e sulla stanza) nella transazione di prenotazione, poi controllo di sovrapposizione | Test di concorrenza nello Sprint 3 |
+| Code e scheduler | Celery + Redis + beat | Outbox `notification_jobs` nel DB + cron di cPanel che chiama `/api/v1/internal/cron` con chiave segreta | Sprint 5 |
+| Rate limiting | Redis | Tabella nel database | Sprint 1 |
+| Avvio | uvicorn | Passenger (WSGI) → a2wsgi → FastAPI; migrazioni all'avvio con lock `GET_LOCK` | Test end-to-end del percorso Passenger; simulazione di deploy su database vuoto |
+
+**Rischio accettato:** l'isolamento poggia sul codice applicativo più le chiavi composite, non su una policy del database. Per compensare:
+1. ogni nuovo endpoint deve avere il test A/B di isolamento (Definition of Done);
+2. il SQL testuale sulle tabelle degli studi è vietato;
+3. la guardia di schema fa fallire la CI se una tabella con `tenant_id` non è mappata come `TenantScoped` o non ha la chiave `(tenant_id, id)`.

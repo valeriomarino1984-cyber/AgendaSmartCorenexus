@@ -75,3 +75,35 @@ class RequestContextMiddleware:
                 duration_ms=round((time.perf_counter() - started) * 1000, 1),
             )
             structlog.contextvars.clear_contextvars()
+
+
+class SecurityHeadersMiddleware:
+    """Header di sicurezza su ogni risposta dell'API (gli stessi del frontend, più restrittivi)."""
+
+    def __init__(self, app: ASGIApp, *, strict: bool) -> None:
+        self.app = app
+        headers = {
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY",
+            "Referrer-Policy": "strict-origin-when-cross-origin",
+            "Cross-Origin-Opener-Policy": "same-origin",
+        }
+        if strict:
+            # In staging/produzione l'API restituisce solo JSON (la documentazione è spenta).
+            headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
+            headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        self.headers = headers
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_wrapper(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                mutable = MutableHeaders(scope=message)
+                for key, value in self.headers.items():
+                    mutable.setdefault(key, value)
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
