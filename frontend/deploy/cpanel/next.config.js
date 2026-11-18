@@ -5,6 +5,8 @@ module.exports = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // Vedi apps/web/next.config.ts: niente riscritture su disco delle pagine in cache.
+  experimental: { isrFlushToDisk: false },
   async headers() {
     return headerRules();
   },
