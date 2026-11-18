@@ -32,6 +32,7 @@ from app.modules.accounts.audit import audit
 from app.modules.accounts.service import BLOCKED_TENANT_STATUSES, Outcome, TooManyRequestsError
 from app.modules.agenda.service import STATUS_LABELS
 from app.modules.email import templates
+from app.modules.notifications import service as notifications
 
 LINK_TTL = timedelta(minutes=15)
 SESSION_MAX = timedelta(days=14)
@@ -230,7 +231,9 @@ def overview(db: Database, ctx: ClientContext) -> dict[str, object]:
         }
 
 
-def cancel(db: Database, ctx: ClientContext, appointment_id: uuid.UUID, ip: str | None) -> None:
+def cancel(
+    db: Database, ctx: ClientContext, appointment_id: uuid.UUID, ip: str | None
+) -> uuid.UUID:
     with db.platform_session("area clienti: verifica dell'appuntamento da disdire") as s:
         row = s.execute(
             select(Appointment.tenant_id)
@@ -274,6 +277,7 @@ def cancel(db: Database, ctx: ClientContext, appointment_id: uuid.UUID, ip: str 
                 new_value={"status": a.status},
             )
         )
+        notifications.on_cancelled(s, a)
         audit(
             s,
             "appointment_cancelled_by_client",
@@ -282,3 +286,4 @@ def cancel(db: Database, ctx: ClientContext, appointment_id: uuid.UUID, ip: str 
             resource="appointment",
             resource_id=a.id,
         )
+    return tenant_id

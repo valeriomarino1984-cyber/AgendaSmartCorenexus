@@ -32,6 +32,7 @@ export interface Appointment {
   color?: string;
   professional_name?: string;
   professional_color?: string;
+  notifications?: import("./notifications").NotificationItem[];
   events?: { type: string; actor_type: string; at: string; previous: Record<string, unknown> | null; new: Record<string, unknown> | null }[];
 }
 

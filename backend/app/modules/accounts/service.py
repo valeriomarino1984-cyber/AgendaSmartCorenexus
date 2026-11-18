@@ -781,6 +781,8 @@ def get_studio(db: Database, ctx: AuthContext) -> dict[str, object]:
             "contact_phone": st.contact_phone,
             "address": st.address,
             "cancellation_min_hours": st.cancellation_min_hours,
+            "email_confirmations": st.email_confirmations,
+            "reminder_hours": st.reminder_hours,
         }
 
 

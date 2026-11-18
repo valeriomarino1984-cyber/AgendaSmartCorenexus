@@ -9,7 +9,13 @@ from app.modules.email.sender import OutgoingEmail
 FOOTER = "CoreNexus Agenda · email automatica, non rispondere a questo messaggio."
 
 
-def _html(title: str, lines: list[str], button: tuple[str, str] | None, after: list[str]) -> str:
+def _html(
+    title: str,
+    lines: list[str],
+    button: tuple[str, str] | None,
+    after: list[str],
+    footer: str = FOOTER,
+) -> str:
     body = "".join(f"<p style='margin:0 0 14px'>{escape(line)}</p>" for line in lines)
     if button:
         label, url = button
@@ -30,7 +36,8 @@ def _html(title: str, lines: list[str], button: tuple[str, str] | None, after: l
         "<div style='max-width:520px;margin:0 auto;padding:32px 20px'>"
         "<div style='background:#fff;border-radius:16px;padding:28px'>"
         f"<h1 style='font-size:22px;margin:0 0 16px'>{escape(title)}</h1>{body}</div>"
-        f"<p style='color:#86868b;font-size:12px;text-align:center;margin-top:16px'>{FOOTER}</p>"
+        "<p style='color:#86868b;font-size:12px;text-align:center;margin-top:16px'>"
+        f"{escape(footer)}</p>"
         "</div></body></html>"
     )
 
@@ -42,12 +49,15 @@ def _mail(
     lines: list[str],
     button: tuple[str, str] | None = None,
     after: list[str] | None = None,
+    footer: str = FOOTER,
 ) -> OutgoingEmail:
     after = after or []
     text = "\n\n".join(
-        [title, *lines, *([f"{button[0]}: {button[1]}"] if button else []), *after, FOOTER]
+        [title, *lines, *([f"{button[0]}: {button[1]}"] if button else []), *after, footer]
     )
-    return OutgoingEmail(to=to, subject=subject, text=text, html=_html(title, lines, button, after))
+    return OutgoingEmail(
+        to=to, subject=subject, text=text, html=_html(title, lines, button, after, footer)
+    )
 
 
 def verify_email(to: str, name: str, studio: str, url: str) -> OutgoingEmail:
@@ -153,4 +163,30 @@ def platform_invite(to: str, name: str, url: str, first: bool) -> OutgoingEmail:
         ],
         ("Configura l'accesso", url),
         ["Il link vale 24 ore e si può usare una sola volta."],
+    )
+
+
+def appointment_message(
+    to: str,
+    *,
+    subject: str,
+    title: str,
+    lines: list[str],
+    button: tuple[str, str] | None,
+    after: list[str],
+    studio: str,
+    reply_to: str | None,
+) -> OutgoingEmail:
+    """Email al cliente su un appuntamento: mittente con il nome dello studio, risposte a lui."""
+    footer = f"Email inviata da CoreNexus Agenda per conto di {studio}." + (
+        " Rispondendo scrivi direttamente allo studio." if reply_to else ""
+    )
+    mail = _mail(to, subject, title, lines, button, after, footer)
+    return OutgoingEmail(
+        to=mail.to,
+        subject=mail.subject,
+        text=mail.text,
+        html=mail.html,
+        from_name=f"{studio} via Agenda",
+        reply_to=reply_to,
     )

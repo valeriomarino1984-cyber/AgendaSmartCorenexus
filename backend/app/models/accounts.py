@@ -73,12 +73,17 @@ class TenantSettings(TenantScoped, Base):
         UniqueConstraint("tenant_id"),
         ForeignKeyConstraint(["tenant_id"], ["tenants.id"]),
         CheckConstraint("cancellation_min_hours BETWEEN 0 AND 168", name="preavviso_valido"),
+        CheckConstraint("reminder_hours BETWEEN 0 AND 168", name="promemoria_valido"),
     )
 
     contact_email: Mapped[str | None] = mapped_column(String(254))
     contact_phone: Mapped[str | None] = mapped_column(String(30))
     address: Mapped[str | None] = mapped_column(String(200))
     cancellation_min_hours: Mapped[int] = mapped_column(Integer, nullable=False, default=24)
+    # Notifiche email ai clienti: conferme e avvisi (spostato/annullato) e ore di anticipo del
+    # promemoria (0 = nessun promemoria).
+    email_confirmations: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    reminder_hours: Mapped[int] = mapped_column(Integer, nullable=False, default=24)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=utcnow, onupdate=utcnow
     )

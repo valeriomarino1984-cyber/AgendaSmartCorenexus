@@ -38,6 +38,7 @@ from app.models.catalog import Client, Location, Professional, Service, ServiceP
 from app.modules.accounts.audit import audit
 from app.modules.agenda import slots as sl
 from app.modules.agenda.holidays import holiday_name
+from app.modules.notifications import service as notifications
 
 if TYPE_CHECKING:
     from app.modules.accounts.service import AuthContext
@@ -524,6 +525,7 @@ def get_appointment(db: Database, ctx: AuthContext, appointment_id: uuid.UUID) -
             .where(AppointmentEvent.appointment_id == a.id)
             .order_by(AppointmentEvent.occurred_at)
         )
+        out["notifications"] = notifications.for_appointment(s, a.id)
         out["events"] = [
             {
                 "type": e.event_type,
@@ -687,6 +689,7 @@ def create_appointment(
         s.add(a)
         s.flush()
         _event(s, a, ctx, "created", new={"start_at": _iso(start), "status": a.status})
+        notifications.on_created(s, a)
         s.flush()
         return _appointment_out(a, client, svc, prof)
 
@@ -781,6 +784,8 @@ def update_appointment(
             "professional_id": str(a.professional_id),
         }
         _event(s, a, ctx, "rescheduled" if moved else "updated", before, after)
+        if moved:
+            notifications.on_rescheduled(s, a)
         s.flush()
         return _appointment_out(a, s.get(Client, a.client_id), svc, prof)
 
@@ -818,6 +823,12 @@ def set_status(
             a.cancellation_reason = reason
         a.version += 1
         _event(s, a, ctx, status, {"status": previous}, {"status": status})
+        if status == "confirmed":
+            notifications.on_confirmed(s, a)
+        elif status.startswith("cancelled"):
+            notifications.on_cancelled(s, a)
+        else:
+            notifications.on_closed(s, a)
         s.flush()
         return _appointment_out(
             a,

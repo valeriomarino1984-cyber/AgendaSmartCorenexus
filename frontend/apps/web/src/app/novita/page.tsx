@@ -1,4 +1,4 @@
-import { ArrowUpRight, CalendarRange, Clock3, ShieldCheck, Timer, LockKeyhole, Sparkles, Stethoscope, UserCog, Users, Video } from "lucide-react";
+import { ArrowUpRight, BellRing, CalendarRange, Clock3, ShieldCheck, Timer, LockKeyhole, Sparkles, Stethoscope, UserCog, Users, Video } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
@@ -10,6 +10,12 @@ import { CONTACT_PAGE } from "@/lib/contacts";
 export const metadata = { title: `Novità di ${APP_NAME}`, description: `Gli ultimi aggiornamenti di ${APP_NAME}.` };
 
 const releases: { label: string; items: { icon: ReactNode; tile: string; title: string; text: string }[] }[] = [
+  {
+    label: "18 novembre 2026 · versione 0.7",
+    items: [
+      { icon: <BellRing />, tile: "bg-sys-orange", title: "Email ai clienti", text: "Conferma quando l'appuntamento viene fissato, promemoria prima della visita, avvisi se si sposta o si annulla. Con il link della videochiamata per le visite online e il nome dello studio come mittente." },
+    ],
+  },
   {
     label: "18 novembre 2026 · versione 0.6",
     items: [
