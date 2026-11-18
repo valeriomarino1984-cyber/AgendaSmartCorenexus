@@ -268,3 +268,39 @@ export function AddRow({ label, children }: { label: string; children: ReactNode
     </details>
   );
 }
+
+/** Casella di spunta con titolo e descrizione, come le opzioni delle Impostazioni. */
+export function CheckRow({
+  label,
+  description,
+  checked,
+  onChange,
+  disabled = false,
+}: {
+  label: string;
+  description?: ReactNode;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <label className={`flex items-start gap-3 ${disabled ? "opacity-60" : ""}`}>
+      <input
+        type="checkbox"
+        className="mt-1 h-4 w-4 shrink-0 accent-[var(--color-accent)]"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span>
+        <span className="block t-body">{label}</span>
+        {description && <span className="block t-footnote text-ink-3">{description}</span>}
+      </span>
+    </label>
+  );
+}
+
+/** Pallino del colore (prestazione o professionista). */
+export function ColorDot({ color, size = 12 }: { color: string; size?: number }) {
+  return <span aria-hidden className="inline-block shrink-0 rounded-full" style={{ background: color, width: size, height: size }} />;
+}

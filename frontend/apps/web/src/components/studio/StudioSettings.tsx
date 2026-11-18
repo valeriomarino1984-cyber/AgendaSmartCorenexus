@@ -1,7 +1,10 @@
 "use client";
 
+import { ChevronRight, Stethoscope, UserCog, UserRound } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Field, Notice, PageHeader, Panel, btnPrimary, inputCls, selectCls } from "@/components/ui";
+import { Field, IconTile, Notice, PageHeader, Panel, btnPrimary, inputCls, selectCls } from "@/components/ui";
+import { LocationPanel } from "@/components/studio/LocationPanel";
 import { useAction } from "@/components/auth/useAction";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/me";
@@ -124,6 +127,36 @@ export function StudioSettings() {
           </div>
         )}
       </form>
+      <LocationPanel canEdit={canEdit} />
+      <StudioLinks owner={canEdit} />
     </>
+  );
+}
+
+/** Su telefono la barra in basso ha poco spazio: le altre sezioni dello studio si raggiungono da qui. */
+function StudioLinks({ owner }: { owner: boolean }) {
+  const links = [
+    { href: "/app/prestazioni", label: "Prestazioni", icon: <Stethoscope />, tile: "bg-sys-teal" },
+    { href: "/app/professionisti", label: "Professionisti", icon: <UserRound />, tile: "bg-sys-indigo" },
+    ...(owner ? [{ href: "/app/collaboratori", label: "Collaboratori", icon: <UserCog />, tile: "bg-sys-orange" }] : []),
+  ];
+  return (
+    <div className="lg:hidden">
+      <Panel title="Studio" flush>
+        <ul>
+          {links.map((l) => (
+            <li key={l.href} className="group/row">
+              <Link href={l.href} className="flex min-h-[52px] items-center gap-3.5 pl-5 hover:bg-ink/[0.03]">
+                <IconTile icon={l.icon} className={l.tile} />
+                <span className="flex min-h-[52px] flex-1 items-center border-t border-rule pr-4 t-body group-first/row:border-t-0">
+                  <span className="flex-1">{l.label}</span>
+                  <ChevronRight className="h-[17px] w-[17px] text-ink-3/60" strokeWidth={2.4} />
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Panel>
+    </div>
   );
 }

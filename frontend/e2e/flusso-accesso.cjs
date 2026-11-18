@@ -52,7 +52,7 @@ const step = (n) => console.log('✓', n);
 
   await page.getByRole('link', { name: 'Impostazioni' }).first().click();
   await page.getByLabel('Telefono', { exact: true }).fill('+39 02 1234567');
-  await page.getByRole('button', { name: 'Salva' }).click();
+  await page.getByRole('button', { name: 'Salva', exact: true }).click();
   await page.getByText('Impostazioni salvate').waitFor();
   step('impostazioni salvate');
 

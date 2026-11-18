@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 import uuid
-from collections.abc import Iterator
 
 import httpx
 import pytest
@@ -15,25 +14,9 @@ from sqlalchemy import Engine, text
 from app.core.config import Settings
 from app.main import create_app
 from app.modules.email.sender import MEMORY_OUTBOX
+from tests.integration.conftest import new_client
 
-ORIGIN = {"Origin": "http://localhost:3000"}
 PASSWORD = "Tramonto-sul-lago-7"
-
-
-@pytest.fixture
-def app(settings: Settings) -> Iterator[FastAPI]:
-    application = create_app(settings)
-    yield application
-    application.state.db.dispose()
-
-
-def new_client(app: FastAPI) -> TestClient:
-    return TestClient(app, headers=ORIGIN)
-
-
-@pytest.fixture
-def client(app: FastAPI) -> TestClient:
-    return new_client(app)
 
 
 def unique_email(prefix: str = "utente") -> str:

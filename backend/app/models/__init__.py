@@ -11,3 +11,11 @@ from app.models.accounts import (  # noqa: F401
     User,
     UserToken,
 )
+from app.models.catalog import (  # noqa: F401
+    Client,
+    ClientConsentEvent,
+    Location,
+    Professional,
+    Service,
+    ServiceProfessional,
+)

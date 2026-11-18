@@ -86,7 +86,7 @@ cd frontend && pnpm lint && pnpm typecheck && pnpm build
 
 ## Test end-to-end (browser)
 
-Il flusso completo di accesso (registrazione, conferma email, impostazioni, invito, ruoli, uscita) si prova con `frontend/e2e/flusso-accesso.cjs`: le istruzioni sono in testa al file. Le email vengono scritte su file (`EMAIL_BACKEND=file`) e lette dal test.
+Il flusso completo di accesso (registrazione, conferma email, impostazioni, invito, ruoli, uscita) si prova con `frontend/e2e/flusso-accesso.cjs`, quello delle anagrafiche (prestazioni, professionisti, sede, clienti e consensi) con `frontend/e2e/flusso-anagrafiche.cjs`: le istruzioni sono in testa ai file. Le email vengono scritte su file (`EMAIL_BACKEND=file`) e lette dal test.
 
 ## Deploy
 

@@ -63,3 +63,28 @@ Confronto con MioDottore emerso da un potenziale cliente (nutrizionista). MioDot
 - offerte promozionali dello studio (es. "5 sedute a 270 € invece di 300 €") inviate via **WhatsApp** (ed eventualmente SMS);
 - vincoli da rispettare: per WhatsApp servono template di categoria **Marketing** (costano di più degli Utility e Meta limita gli invii); serve un **consenso marketing separato** da quello per i promemoria (GDPR), con revoca in un clic; i messaggi promozionali restano distinti da quelli di servizio, come già richiesto dalla specifica §5.6;
 - l'eventuale vendita o il pagamento del pacchetto resta fuori: la campagna informa, lo studio incassa come oggi.
+
+### Profili professionali, visite online e area piattaforma (18/11/2026)
+
+**Profili ("moduli") per professione: profilo preconfigurato.** Stessa applicazione per tutti; ogni studio, in base all'attività, parte con:
+- prestazioni tipiche già create (nome, durata, preparazione, modalità in studio/online);
+- impostazioni predefinite (es. messaggi discreti, visite online attive).
+
+Lo studio può poi modificare tutto. Niente sezioni specifiche con dati clinici (fuori perimetro).
+
+**Profili dedicati iniziali:** fisioterapista, osteopata, nutrizionista (anche biologo nutrizionista), psicologa (anche psicoterapeuta). **Ginecologa esclusa.** Le altre categorie già presenti restano selezionabili con un profilo generico.
+
+**Visite online: link generato in automatico**, diverso per ogni appuntamento online, incluso nella conferma e nei promemoria (Sprint 3 e Sprint 5).
+- Ogni prestazione ha una modalità: *in studio*, *online* o *entrambe* (Sprint 2).
+- Proposta tecnica: stanza Jitsi con nome casuale non indovinabile. L'indirizzo base (`VIDEO_BASE_URL`) è configurabile, per passare a un servizio con server UE e contratto di trattamento dati o a un'istanza Jitsi propria senza cambiare il codice.
+- **Da verificare prima del rilascio:**
+  - (1) privacy del servizio pubblico `meet.jit.si`, soprattutto per gli psicologi;
+  - (2) se `meet.jit.si` richiede al professionista di accedere con un account per aprire la stanza;
+  - (3) nessun dato sanitario nel nome della stanza.
+
+**Area piattaforma CoreNexus (`/piattaforma`): dopo lo Sprint 2.** Accesso riservato al team CoreNexus con account nominativi, verifica in due passaggi obbligatoria e registro delle azioni. Da lì:
+- creazione degli studi e invito del titolare;
+- assegnazione del profilo e attivazione dei moduli;
+- sospensione e riattivazione;
+- gestione della prova;
+- visibilità delle categorie.

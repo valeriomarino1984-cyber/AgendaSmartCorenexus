@@ -1,8 +1,10 @@
 import os
+import uuid
 
 import pytest
 from alembic import command
 from alembic.script import ScriptDirectory
+from sqlalchemy import Engine, text
 
 from app.core.config import Settings
 from app.core.db import SchemaOutOfDateError
@@ -52,3 +54,52 @@ def test_app_refuses_outdated_schema(settings: Settings) -> None:
             create_app(settings)
     finally:
         command.upgrade(cfg, "head")
+
+
+def test_catalog_migration_backfills_existing_studios(owner_engine: Engine) -> None:
+    """Gli studi creati prima dello Sprint 2 ricevono sede principale e schede professionista."""
+    cfg = alembic_config()
+    command.downgrade(cfg, "0002_accounts")
+    tenant, owner, secretary = uuid.uuid4().hex, uuid.uuid4().hex, uuid.uuid4().hex
+    try:
+        with owner_engine.begin() as conn:
+            conn.execute(
+                text(
+                    "INSERT INTO tenants (id, name, slug, business_type, status, timezone, "
+                    "neutral_messaging, created_at, updated_at) VALUES (:id, 'Studio Storico', "
+                    ":slug, 'osteopata', 'active', 'Europe/Rome', 1, UTC_TIMESTAMP(), "
+                    "UTC_TIMESTAMP())"
+                ),
+                {"id": tenant, "slug": f"storico-{tenant[:8]}"},
+            )
+            for uid, name, role in [
+                (owner, "Ada Neri", "owner"),
+                (secretary, "Bea Sala", "secretary"),
+            ]:
+                conn.execute(
+                    text(
+                        "INSERT INTO users (id, email, full_name, status, is_platform_admin, "
+                        "created_at) VALUES (:id, :email, :name, 'active', 0, UTC_TIMESTAMP())"
+                    ),
+                    {"id": uid, "email": f"{uid}@example.com", "name": name},
+                )
+                conn.execute(
+                    text(
+                        "INSERT INTO tenant_users (id, tenant_id, user_id, role, status, "
+                        "permissions, created_at) VALUES (:id, :t, :u, :r, 'active', '{}', "
+                        "UTC_TIMESTAMP())"
+                    ),
+                    {"id": uuid.uuid4().hex, "t": tenant, "u": uid, "r": role},
+                )
+    finally:
+        command.upgrade(cfg, "head")
+
+    with owner_engine.connect() as conn:
+        locations = conn.execute(
+            text("SELECT name, is_default FROM locations WHERE tenant_id = :t"), {"t": tenant}
+        ).all()
+        professionals = conn.execute(
+            text("SELECT name FROM professionals WHERE tenant_id = :t"), {"t": tenant}
+        ).all()
+    assert [tuple(r) for r in locations] == [("Sede principale", 1)]
+    assert [r[0] for r in professionals] == ["Ada Neri"]  # la segreteria non ha una scheda
