@@ -223,7 +223,13 @@ def build_email(settings: Settings, job: NotificationJob, c: _Context) -> Outgoi
         if address:
             place.append(f"Dove: {address}.")
     contacts = " · ".join(x for x in [c.st.contact_phone, c.st.contact_email] if x)
-    after = [f"I tuoi appuntamenti e la disdetta online: {area}"]
+    # Il link all'area clienti va nel pulsante; con la visita online il pulsante è la
+    # videochiamata e l'area clienti finisce qui sotto.
+    after = (
+        [f"I tuoi appuntamenti e la disdetta online: {area}"]
+        if c.a.is_online and c.a.video_url
+        else []
+    )
     if c.st.cancellation_min_hours:
         after.append(f"Si può disdire fino a {c.st.cancellation_min_hours} ore prima.")
     if contacts:

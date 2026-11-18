@@ -8,6 +8,7 @@ import { useAction } from "@/components/auth/useAction";
 import { api, ApiError } from "@/lib/api";
 import { STATUS_TONE, formatDay, formatTime, hhmm, parseHHMM, toInstant, zoned, type Appointment, type Day } from "@/lib/agenda";
 import { MODE_LABELS, formatDateTime, formatPhone, formatPrice, type Client, type Professional, type Service } from "@/lib/catalog";
+import { NOTIFICATION_TONE } from "@/lib/notifications";
 
 export interface SheetContext {
   tz: string;
@@ -460,7 +461,7 @@ function AppointmentDetail({ ctx, id, onChanged, onClose }: { ctx: SheetContext;
               {copied ? <><Check className="h-4 w-4" /> Copiato</> : <><Copy className="h-4 w-4" /> Copia link</>}
             </button>
           </div>
-          <p className="t-caption text-ink-3">Il link sarà inviato al cliente con la conferma e i promemoria (in arrivo con le notifiche).</p>
+          <p className="t-caption text-ink-3">Il link è nelle email di conferma e di promemoria inviate al cliente.</p>
         </div>
       )}
 
@@ -504,6 +505,23 @@ function AppointmentDetail({ ctx, id, onChanged, onClose }: { ctx: SheetContext;
         <button type="button" className={btnSecondary} disabled={pending} onClick={() => setStatus(a.status === "completed" ? "no_show" : "completed")}>
           {a.status === "completed" ? "Correggi: assente" : "Correggi: svolto"}
         </button>
+      )}
+
+      {a.notifications && a.notifications.length > 0 && (
+        <div className="space-y-1.5 border-t border-rule pt-4">
+          <p className="t-footnote font-medium text-ink-3">Email al cliente</p>
+          <ul className="space-y-1.5">
+            {a.notifications.map((n) => (
+              <li key={n.id} className="flex flex-wrap items-center gap-2 t-footnote">
+                <span className="text-ink-2">{n.kind_label}</span>
+                <Tag tone={NOTIFICATION_TONE[n.status]}>{n.status_label}</Tag>
+                <span className="text-ink-3">
+                  {n.status === "sent" && n.sent_at ? formatDateTime(n.sent_at) : n.status === "pending" ? `prevista ${formatDateTime(n.scheduled_at)}` : n.reason_label ?? ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {a.events && a.events.length > 0 && (

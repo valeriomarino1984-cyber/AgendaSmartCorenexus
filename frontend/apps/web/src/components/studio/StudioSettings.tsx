@@ -18,6 +18,8 @@ interface Studio {
   contact_phone: string | null;
   address: string | null;
   cancellation_min_hours: number;
+  email_confirmations: boolean;
+  reminder_hours: number;
 }
 interface BusinessType { code: string; label: string }
 
@@ -55,6 +57,8 @@ export function StudioSettings() {
           contact_phone: studio.contact_phone || null,
           address: studio.address || null,
           cancellation_min_hours: Number(studio.cancellation_min_hours),
+          email_confirmations: studio.email_confirmations,
+          reminder_hours: Number(studio.reminder_hours),
         },
       }),
     );
@@ -116,6 +120,31 @@ export function StudioSettings() {
                   </span>
                 </span>
               </label>
+            </div>
+          </Panel>
+          <Panel title="Notifiche ai clienti" meta="Email">
+            <div className="space-y-5">
+              <label className="flex items-start gap-3">
+                <input type="checkbox" className="mt-1 h-4 w-4 accent-[var(--color-accent)]" checked={studio.email_confirmations}
+                  onChange={(e) => set("email_confirmations", e.target.checked)} />
+                <span>
+                  <span className="block t-body">Conferme e avvisi</span>
+                  <span className="block t-footnote text-ink-3">
+                    Email al cliente quando un appuntamento viene fissato, spostato o annullato, con il link della visita online.
+                  </span>
+                </span>
+              </label>
+              <Field label="Promemoria" hint="Email di promemoria prima dell'appuntamento.">
+                <select className={selectCls} value={studio.reminder_hours}
+                  onChange={(e) => set("reminder_hours", Number(e.target.value))}>
+                  {[0, 2, 6, 12, 24, 48, 72].map((h) => (
+                    <option key={h} value={h}>{h === 0 ? "Nessun promemoria" : `${h} ore prima`}</option>
+                  ))}
+                </select>
+              </Field>
+              <p className="t-footnote text-ink-3">
+                Le email partono solo ai clienti con indirizzo email e consenso ai promemoria via email. L&apos;esito di ogni invio è nella pagina Notifiche.
+              </p>
             </div>
           </Panel>
         </fieldset>

@@ -59,6 +59,7 @@ Nella guida `UTENTE` è il nome utente cPanel. cPanel antepone `UTENTE_` ai nomi
    | `SESSION_IDLE_HOURS` | facoltativa: `1` (default). Ore senza attività dopo cui i professionisti escono; l'area clienti esce dopo 5 minuti |
    | `PLATFORM_SECRET_KEY` | **segreta**, almeno 32 caratteri casuali. Accende l'area piattaforma (`/piattaforma`) e serve a ricavare i codici a 6 cifre. Non va mai cambiata dopo l'attivazione (i codici delle app smetterebbero di funzionare) né scritta in chat |
    | `PLATFORM_BOOTSTRAP_EMAIL` | email di chi fa la prima configurazione dell'area piattaforma. Usata solo finché non esiste nessun account |
+   | `CRON_SECRET` | **segreta**, almeno 32 caratteri casuali. Chiave del cron di cPanel che fa partire i promemoria (vedi `13-notifiche-email.md`) |
    | `SENTRY_DSN` | facoltativo, progetto Sentry in regione UE |
 
    Con `AUTO_MIGRATE=1` le migrazioni partono all'avvio dell'app con l'utente `agmigr`. Subito dopo, l'indirizzo con quelle credenziali viene tolto dalla memoria del processo: il resto dell'applicazione usa solo `agapp`.
