@@ -9,10 +9,10 @@ Come previsto dalla specifica, **queste decisioni non sono state prese dall'agen
 | 3 | Hosting e database | Sprint 0 | a) Cloud gestito UE (es. AWS eu-south-1 Milano / GCP europe-west8) · b) Provider europei (Hetzner, Scaleway, OVH) + Postgres gestito · c) Supabase solo come Postgres gestito in regione UE | Postgres **gestito** con backup PITR e regione UE; scelta del provider in base al budget | **APPROVATA** (17/11/2026): **hosting Netsons (cPanel)**, come Presenze, sottodominio `agenda.corenexus.it`; database **MariaDB/MySQL** del cPanel (PostgreSQL non disponibile). Vedi conseguenze sotto e `07-deploy-netsons.md` |
 | 4 | Onboarding WhatsApp | Sprint 6, App Review | a) Embedded Signup (richiede Tech Provider) · b) Collegamento manuale assistito (solo fase pilota) · c) Tramite BSP | **(a)** a regime; **(b)** per i primi tenant pilota mentre è in corso l'approvazione Meta | **APPROVATA** (17/11/2026) |
 | 5 | Numeri dei professionisti | Modello dati WhatsApp, prezzi | a) 1 numero per tenant · b) 1 numero per professionista · c) Numero unico CoreNexus per tutti | **(a)** per l'MVP. (c) è sconsigliata: il cliente finale vedrebbe CoreNexus e non lo studio, e la qualità del numero sarebbe condivisa tra tutti i tenant | **APPROVATA** (17/11/2026): 1 numero per studio |
-| 6 | Provider pagamenti | R2/R4 | Stripe / altri | Stripe (Billing + Checkout), come da specifica | APERTA |
+| 6 | Provider pagamenti | R4 (abbonamenti SaaS) | Stripe / altri | Stripe (Billing + Checkout), come da specifica | APERTA – riguarda solo gli abbonamenti degli studi; i pagamenti dei clienti finali sono **fuori perimetro** (18/11/2026) |
 | 7 | **Contabilizzazione messaggi** | Wallet, listino §10.3, piani | a) Il tenant paga Meta direttamente, CoreNexus conta i messaggi solo come limite di piano · b) CoreNexus rivende i messaggi (richiede Solution Partner o BSP con linea di credito) · c) Ibrido | **Decisione critica.** Con (a) i pacchetti €/messaggi del §10.3 non sono coerenti (doppio costo per lo studio). Con (b) il listino ha senso ma aumentano requisiti e rischio di credito. Serve una scelta commerciale prima di R2 | **APPROVATA** (17/11/2026): **(a)**, per ora gli studi pagano Meta direttamente. Vedi conseguenze sotto |
 | 8 | Politica di cancellazione | Sprint 4 | Preavviso minimo, motivazione obbligatoria o no, gestione oltre il limite (bloccare o consentire con avviso) | Default configurabile per tenant: 24 h di preavviso; oltre il limite il link mostra i contatti dello studio invece del pulsante Disdici | APERTA |
-| 9 | Perimetro MVP | Pianificazione | — | Quello indicato in `03-piano-di-sviluppo.md` (incluso l'**email come fallback** obbligatorio) | APERTA |
+| 9 | Perimetro MVP | Pianificazione | — | Quello indicato in `03-piano-di-sviluppo.md` (incluso l'**email come fallback** obbligatorio) | **APPROVATA** (18/11/2026): solo **gestione appuntamenti**, canali **WhatsApp + email**. Vedi "Posizionamento e perimetro" sotto |
 | 10 | Conservazione dati | Job di pulizia, informative | Durata storico appuntamenti, log notifiche, webhook grezzi, audit, clienti inattivi | Proposta da validare con il legale: webhook grezzi 30 gg · log notifiche 24 mesi · audit 24 mesi · clienti inattivi: anonimizzazione dopo N anni definiti dal tenant | APERTA |
 
 ## Decisioni aggiuntive emerse dall'analisi
@@ -47,6 +47,22 @@ Il cPanel offre *Setup Node.js App*, *Setup Python App* e MySQL/MariaDB, ma non 
 - Le "notifiche WhatsApp incluse" dei piani (100/500/1.500/4.000) diventano una **quota di utilizzo del servizio di automazione** CoreNexus, applicata dal worker. Non sono crediti Meta.
 - **Da rivedere commercialmente:** i pacchetti aggiuntivi del §10.3 (es. 250 messaggi a 7,90 €), venduti con questo modello, sarebbero un ampliamento della quota di automazione e lo studio pagherebbe comunque Meta a parte. Va deciso se mantenerli (con una comunicazione chiara) o eliminarli. Il wallet di R2/R4 si riduce quindi a un contatore di quota con soglie dell'80% e di esaurimento.
 - Il modello resta reversibile: passare in futuro a Solution Partner richiede di aggiungere il ledger dei costi, non di riprogettare.
+
+### Posizionamento e perimetro (18/11/2026)
+Confronto con MioDottore emerso da un potenziale cliente (nutrizionista). MioDottore vende soprattutto **visibilità e nuovi pazienti** (marketplace, recensioni), con fatturazione, scheda clinica, pagamenti e teleconsulto, a un prezzo molto più alto. **CoreNexus Agenda non lo insegue.**
+
+**Posizionamento:** l'agenda per gestire i clienti che lo studio ha già, con prenotazione online, promemoria automatici e conferma/spostamento/disdetta in autonomia, a una frazione del prezzo e con il nome dello studio.
+
+**Decisioni:**
+- **Focus esclusivo sulla gestione degli appuntamenti**, da rendere il più semplice e veloce possibile.
+- **Canali: WhatsApp + email.** Niente SMS per ora (opzione B). La pratica Meta (verifica aziendale e Tech Provider) diventa **percorso critico**: senza di essa WhatsApp non parte, e l'email resta il canale di riserva.
+- **Pagamenti dei clienti finali, pacchetti di sedute e wallet: fuori perimetro.** Restano solo gli abbonamenti degli studi a CoreNexus (Release 4).
+- **Non previsti:** marketplace e recensioni, fatturazione elettronica, scheda clinica, teleconsulto, centralino.
+
+**Possibile modulo futuro "Campagne"** (dopo l'MVP, da validare con i clienti):
+- offerte promozionali dello studio (es. "5 sedute a 270 € invece di 300 €") inviate via **WhatsApp** (ed eventualmente SMS);
+- vincoli da rispettare: per WhatsApp servono template di categoria **Marketing** (costano di più degli Utility e Meta limita gli invii); serve un **consenso marketing separato** da quello per i promemoria (GDPR), con revoca in un clic; i messaggi promozionali restano distinti da quelli di servizio, come già richiesto dalla specifica §5.6;
+- l'eventuale vendita o il pagamento del pacchetto resta fuori: la campagna informa, lo studio incassa come oggi.
 
 ### Profili professionali, visite online e area piattaforma (18/11/2026)
 
