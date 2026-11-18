@@ -136,3 +136,21 @@ def client_login(to: str, url: str, studios: list[str]) -> OutgoingEmail:
             "Se non hai fatto tu la richiesta, ignora questa email.",
         ],
     )
+
+
+def platform_invite(to: str, name: str, url: str, first: bool) -> OutgoingEmail:
+    return _mail(
+        to,
+        "Accesso all'area piattaforma CoreNexus Agenda",
+        f"Ciao {name}",
+        [
+            "Prima configurazione dell'area piattaforma: scegli la password e collega "
+            "l'app di autenticazione."
+            if first
+            else "Sei stato invitato nell'area piattaforma di CoreNexus Agenda.",
+            "Ti servirà un'app per i codici a 6 cifre (Google Authenticator, Microsoft "
+            "Authenticator o simili).",
+        ],
+        ("Configura l'accesso", url),
+        ["Il link vale 24 ore e si può usare una sola volta."],
+    )

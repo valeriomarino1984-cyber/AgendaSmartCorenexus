@@ -54,6 +54,12 @@ class Settings(BaseSettings):
     # Si può passare a un servizio con server UE o a un Jitsi proprio senza toccare il codice.
     video_base_url: str = "https://meet.jit.si"
 
+    # Area piattaforma CoreNexus (/piattaforma). Senza chiave l'area resta spenta.
+    # La chiave (almeno 32 caratteri casuali) serve a ricavare i segreti dei codici a 6 cifre.
+    platform_secret_key: SecretStr | None = None
+    # Email che può fare la prima configurazione quando non esiste ancora nessun account.
+    platform_bootstrap_email: str | None = None
+
     sentry_dsn: SecretStr | None = None
     sentry_traces_sample_rate: float = Field(default=0.0, ge=0.0, le=1.0)
 
@@ -79,6 +85,9 @@ class Settings(BaseSettings):
             raise ValueError("cors_origins non può contenere '*' in ambiente " + self.environment)
         if not self.log_json:
             raise ValueError("log_json deve essere attivo in ambiente " + self.environment)
+        key = self.platform_secret_key
+        if key is not None and len(key.get_secret_value()) < 32:
+            raise ValueError("platform_secret_key deve avere almeno 32 caratteri")
         if self.email_backend != "smtp":
             raise ValueError("email_backend deve essere 'smtp' in ambiente " + self.environment)
         if not self.smtp_host:
@@ -93,6 +102,10 @@ class Settings(BaseSettings):
     def session_cookie_name(self) -> str:
         # Il prefisso __Host- impone Secure, Path=/ e nessun Domain: il cookie resta su questo host.
         return "__Host-agenda_session" if self.cookie_secure else "agenda_session"
+
+    @property
+    def platform_cookie_name(self) -> str:
+        return "__Host-agenda_piattaforma" if self.cookie_secure else "agenda_piattaforma"
 
     @property
     def client_cookie_name(self) -> str:

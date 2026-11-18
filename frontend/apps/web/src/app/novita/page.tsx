@@ -1,4 +1,4 @@
-import { ArrowUpRight, CalendarRange, Clock3, Timer, LockKeyhole, Sparkles, Stethoscope, UserCog, Users, Video } from "lucide-react";
+import { ArrowUpRight, CalendarRange, Clock3, ShieldCheck, Timer, LockKeyhole, Sparkles, Stethoscope, UserCog, Users, Video } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
@@ -10,6 +10,12 @@ import { CONTACT_PAGE } from "@/lib/contacts";
 export const metadata = { title: `Novità di ${APP_NAME}`, description: `Gli ultimi aggiornamenti di ${APP_NAME}.` };
 
 const releases: { label: string; items: { icon: ReactNode; tile: string; title: string; text: string }[] }[] = [
+  {
+    label: "18 novembre 2026 · versione 0.6",
+    items: [
+      { icon: <ShieldCheck />, tile: "bg-[#1d1d1f]", title: "Area piattaforma CoreNexus", text: "Il team CoreNexus crea gli studi e invita i titolari, gestisce prove, sospensioni e profili professionali. Accesso con password e codice a 6 cifre, senza accesso ai dati dei clienti." },
+    ],
+  },
   {
     label: "18 novembre 2026 · versione 0.5",
     items: [
