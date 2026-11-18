@@ -118,3 +118,21 @@ def added_to_studio(to: str, inviter: str, studio: str, role: str, login_url: st
         ],
         ("Accedi", login_url),
     )
+
+
+def client_login(to: str, url: str, studios: list[str]) -> OutgoingEmail:
+    where = ", ".join(studios[:3]) + (" e altri" if len(studios) > 3 else "")
+    return _mail(
+        to,
+        "Il tuo link per l'area clienti",
+        "Entra nell'area clienti",
+        [
+            f"Hai chiesto di vedere i tuoi appuntamenti presso {where}.",
+            "Premi il pulsante per entrare: non serve nessuna password.",
+        ],
+        ("Entra nell'area clienti", url),
+        [
+            "Il link vale 15 minuti e si può usare una sola volta.",
+            "Se non hai fatto tu la richiesta, ignora questa email.",
+        ],
+    )

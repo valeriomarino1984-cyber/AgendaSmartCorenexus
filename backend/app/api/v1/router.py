@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import agenda, auth, catalog, health, meta, tenants
+from app.api.v1 import agenda, auth, catalog, client_portal, health, meta, tenants
 
 api_v1_router = APIRouter()
 api_v1_router.include_router(health.router)
@@ -9,3 +9,4 @@ api_v1_router.include_router(auth.router)
 api_v1_router.include_router(tenants.router)
 api_v1_router.include_router(catalog.router)
 api_v1_router.include_router(agenda.router)
+api_v1_router.include_router(client_portal.router)

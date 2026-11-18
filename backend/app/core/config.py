@@ -94,6 +94,11 @@ class Settings(BaseSettings):
         return "__Host-agenda_session" if self.cookie_secure else "agenda_session"
 
     @property
+    def client_cookie_name(self) -> str:
+        """Cookie dell'area clienti, diverso da quello dello staff: sessioni separate."""
+        return "__Host-agenda_cliente" if self.cookie_secure else "agenda_cliente"
+
+    @property
     def allowed_origins(self) -> set[str]:
         """Origini da cui si accettano richieste che modificano dati (protezione CSRF)."""
         return {self.app_base_url.rstrip("/"), *(o.rstrip("/") for o in self.cors_origins)}
