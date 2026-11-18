@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Stethoscope, UserCog, UserRound } from "lucide-react";
+import { ChevronRight, Clock3, Stethoscope, UserCog, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Field, IconTile, Notice, PageHeader, Panel, btnPrimary, inputCls, selectCls } from "@/components/ui";
@@ -137,6 +137,7 @@ export function StudioSettings() {
 function StudioLinks({ owner }: { owner: boolean }) {
   const links = [
     { href: "/app/prestazioni", label: "Prestazioni", icon: <Stethoscope />, tile: "bg-sys-teal" },
+    { href: "/app/disponibilita", label: "Disponibilità", icon: <Clock3 />, tile: "bg-sys-green" },
     { href: "/app/professionisti", label: "Professionisti", icon: <UserRound />, tile: "bg-sys-indigo" },
     ...(owner ? [{ href: "/app/collaboratori", label: "Collaboratori", icon: <UserCog />, tile: "bg-sys-orange" }] : []),
   ];
