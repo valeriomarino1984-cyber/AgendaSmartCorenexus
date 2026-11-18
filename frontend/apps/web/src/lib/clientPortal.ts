@@ -21,6 +21,8 @@ export interface PortalAppointment {
 
 export interface PortalOverview {
   email: string;
+  /** Secondi senza attività dopo cui la sessione si chiude (5 minuti). */
+  idle_seconds: number;
   upcoming: PortalAppointment[];
   past: PortalAppointment[];
 }

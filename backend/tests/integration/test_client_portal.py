@@ -173,3 +173,38 @@ def test_link_requests_are_rate_limited(app: FastAPI) -> None:
     for _ in range(5):
         assert c.post(f"{API}/client-portal/link", json={"email": E_LIMITE}).status_code == 202
     assert len([m for m in MEMORY_OUTBOX if m.to == E_LIMITE]) == 3
+
+
+def test_client_session_closes_after_5_idle_minutes(app: FastAPI, owner_engine: Engine) -> None:
+    email = unique_email("inattivo")
+    st = Studio(app)
+    st.client_id = with_client(st, email)
+    c = client_login(app, email)
+    assert c.get(f"{API}/client-portal/me").json()["idle_seconds"] == 300
+
+    # 4 minuti fermo: "Resta connesso" rinnova la sessione.
+    sql(
+        owner_engine,
+        "UPDATE client_sessions SET last_seen_at = UTC_TIMESTAMP() - INTERVAL 4 MINUTE "
+        "WHERE email = :e AND revoked_at IS NULL",
+        e=email,
+    )
+    r = c.post(f"{API}/client-portal/keepalive")
+    assert r.status_code == 200 and r.json() == {"idle_seconds": 300}
+    fresh = sql(
+        owner_engine,
+        "SELECT TIMESTAMPDIFF(SECOND, last_seen_at, UTC_TIMESTAMP()) FROM client_sessions "
+        "WHERE email = :e AND revoked_at IS NULL",
+        e=email,
+    )
+    assert int(str(fresh[0][0])) < 30
+
+    # 6 minuti fermo: la sessione è chiusa, anche se la pagina non ha fatto logout.
+    sql(
+        owner_engine,
+        "UPDATE client_sessions SET last_seen_at = UTC_TIMESTAMP() - INTERVAL 6 MINUTE "
+        "WHERE email = :e AND revoked_at IS NULL",
+        e=email,
+    )
+    assert c.post(f"{API}/client-portal/keepalive").status_code == 401
+    assert c.get(f"{API}/client-portal/me").status_code == 401

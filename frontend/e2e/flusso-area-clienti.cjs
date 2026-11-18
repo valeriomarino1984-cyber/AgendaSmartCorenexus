@@ -98,16 +98,34 @@ const step = (n) => console.log('✓', n);
   await page.getByText('Login clienti').waitFor();
   step('con la sessione dello studio l\'area clienti chiede il login clienti');
 
-  await c.getByRole('button', { name: 'Esci' }).click();
-  await c.getByText('Login clienti').waitFor();
-  step('uscita dall\'area clienti');
+  // Timer di disconnessione: orologio simulato per non aspettare 5 minuti veri.
+  await c.clock.install();
+  await c.goto(`${BASE}/area-clienti`);
+  const timer = c.getByRole('timer');
+  await timer.waitFor();
+  const t0 = await timer.innerText();
+  if (!/^(5:00|4:5\d)$/.test(t0.trim())) throw new Error('timer iniziale inatteso: ' + t0);
+  await c.clock.fastForward('04:35');
+  await c.getByText('Vuoi restare connesso?').waitFor();
+  await c.screenshot({ path: `${S}/cl-4-avviso.png` });
+  await c.getByRole('button', { name: 'Resta connesso' }).click();
+  await c.getByText('Vuoi restare connesso?').waitFor({ state: 'detached' });
+  const t1 = (await timer.innerText()).trim();
+  if (!/^(5:00|4:5\d)$/.test(t1)) throw new Error('dopo "Resta connesso" il timer non è ripartito: ' + t1);
+  step(`timer in alto a destra (${t0.trim()}), avviso 30 secondi prima, "Resta connesso" lo fa ripartire`);
+  await c.clock.fastForward('05:05');
+  await c.getByText('Sei uscito per inattività').waitFor();
+  const still = await c.evaluate(() => fetch('/api/v1/client-portal/me').then((r) => r.status));
+  if (still !== 401) throw new Error('sessione ancora aperta sul server: ' + still);
+  await c.screenshot({ path: `${S}/cl-5-scaduta.png` });
+  step('senza risposta si esce da soli dopo 5 minuti, anche sul server');
 
   // Home: contatti, footer con versione, Novità.
   await page.goto(`${BASE}/`);
   await page.getByText('Scrivici direttamente su WhatsApp').waitFor();
-  await page.getByRole('link', { name: /Agenda 0\.4/ }).click();
+  await page.getByRole('link', { name: /Agenda \d+\.\d+/ }).click();
   await page.waitForURL(`${BASE}/novita`);
-  await page.getByText('Cosa c\'è di nuovo in Agenda.').waitFor();
+  await page.getByRole('heading', { name: "Cosa c'è di nuovo in Agenda." }).waitFor();
   step('home con contatti e WhatsApp; footer con versione → Novità');
 
   if (errors.length) throw new Error('errori JavaScript: ' + errors.join(' | '));

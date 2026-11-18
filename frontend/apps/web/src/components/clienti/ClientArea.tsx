@@ -13,10 +13,12 @@ import { STATUS_TONE, formatDay, formatTime, zoned } from "@/lib/agenda";
 import { api, ApiError } from "@/lib/api";
 import { formatPhone } from "@/lib/catalog";
 import type { PortalAppointment, PortalOverview } from "@/lib/clientPortal";
+import { SessionTimer } from "@/components/clienti/SessionTimer";
 
 /** Area clienti: senza sessione mostra l'accesso con link via email, altrimenti gli appuntamenti. */
 export function ClientArea() {
   const [data, setData] = useState<PortalOverview | null | "login">(null);
+  const [timedOut, setTimedOut] = useState(false);
 
   const load = useCallback(() => {
     api<PortalOverview>("/client-portal/me").then(setData, (e) => {
@@ -26,11 +28,21 @@ export function ClientArea() {
   useEffect(load, [load]);
 
   if (data === null) return <div className="min-h-screen bg-paper" />;
-  if (data === "login") return <ClientLogin />;
-  return <Portal data={data} onChanged={load} onLogout={() => setData("login")} />;
+  if (data === "login") return <ClientLogin timedOut={timedOut} />;
+  return (
+    <Portal
+      data={data}
+      onChanged={load}
+      onLogout={() => setData("login")}
+      onExpire={() => {
+        setTimedOut(true);
+        setData("login");
+      }}
+    />
+  );
 }
 
-function ClientLogin() {
+function ClientLogin({ timedOut = false }: { timedOut?: boolean }) {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState<string | null>(null);
   const { pending, error, run } = useAction();
@@ -44,6 +56,11 @@ function ClientLogin() {
   return (
     <AuthShell kicker="Area clienti" title="Login clienti" subtitle="I tuoi appuntamenti e le visite online, senza password.">
       <AreaSwitch current="clienti" />
+      {timedOut && !sent && (
+        <div className="mb-4">
+          <Notice state={{ ok: true, message: "Sei uscito per inattività. Richiedi un nuovo link per rientrare." }} />
+        </div>
+      )}
       {sent ? (
         <div className="space-y-4">
           <Notice state={{ ok: true, message: "Controlla la tua email" }} />
@@ -65,7 +82,9 @@ function ClientLogin() {
   );
 }
 
-function Portal({ data, onChanged, onLogout }: { data: PortalOverview; onChanged: () => void; onLogout: () => void }) {
+function Portal({
+  data, onChanged, onLogout, onExpire,
+}: { data: PortalOverview; onChanged: () => void; onLogout: () => void; onExpire: () => void }) {
   async function logout() {
     await api("/client-portal/logout", { method: "POST" }).catch(() => null);
     onLogout();
@@ -76,9 +95,12 @@ function Portal({ data, onChanged, onLogout }: { data: PortalOverview; onChanged
       <header className="glass sticky top-0 z-10 border-b border-ink/10">
         <div className="mx-auto flex h-12 max-w-3xl items-center justify-between px-4">
           <Logo />
-          <button type="button" onClick={logout} className="inline-flex items-center gap-1.5 t-footnote text-link hover:underline">
-            <LogOut className="h-4 w-4" /> Esci
-          </button>
+          <span className="flex items-center gap-3">
+            <SessionTimer idleSeconds={data.idle_seconds} onExpire={onExpire} />
+            <button type="button" onClick={logout} className="inline-flex items-center gap-1.5 t-footnote text-link hover:underline">
+              <LogOut className="h-4 w-4" /> Esci
+            </button>
+          </span>
         </div>
       </header>
       <main className="mx-auto max-w-3xl space-y-8 px-4 py-8 sm:py-12">

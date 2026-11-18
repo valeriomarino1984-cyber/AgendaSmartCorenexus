@@ -56,6 +56,7 @@ Nella guida `UTENTE` è il nome utente cPanel. cPanel antepone `UTENTE_` ai nomi
    | `EMAIL_FROM` | `CoreNexus Agenda <no-reply@corenexus.it>` (stesso indirizzo di `SMTP_USERNAME`) |
    | `SIGNUP_OPEN` | `false` (default). `true` solo per prove o dopo la pubblicazione di condizioni e informativa privacy |
    | `VIDEO_BASE_URL` | facoltativa: `https://meet.jit.si` (default). Indirizzo base delle stanze per le visite online; si cambia per passare a un servizio con server UE o a un Jitsi proprio |
+   | `SESSION_IDLE_HOURS` | facoltativa: `1` (default). Ore senza attività dopo cui i professionisti escono; l'area clienti esce dopo 5 minuti |
    | `SENTRY_DSN` | facoltativo, progetto Sentry in regione UE |
 
    Con `AUTO_MIGRATE=1` le migrazioni partono all'avvio dell'app con l'utente `agmigr`. Subito dopo, l'indirizzo con quelle credenziali viene tolto dalla memoria del processo: il resto dell'applicazione usa solo `agapp`.

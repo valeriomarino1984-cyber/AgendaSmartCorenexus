@@ -55,7 +55,7 @@ TRIAL_DAYS = 14
 VERIFY_TTL = timedelta(hours=48)
 RESET_TTL = timedelta(hours=1)
 INVITE_TTL = timedelta(days=7)
-SESSION_TOUCH_EVERY = timedelta(minutes=5)
+SESSION_TOUCH_EVERY = timedelta(minutes=1)
 
 LOGIN_FAILS_PER_EMAIL = (5, timedelta(minutes=15))
 LOGIN_FAILS_PER_IP = (30, timedelta(minutes=15))

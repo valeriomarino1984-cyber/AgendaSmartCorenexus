@@ -35,8 +35,8 @@ from app.modules.email import templates
 
 LINK_TTL = timedelta(minutes=15)
 SESSION_MAX = timedelta(days=14)
-SESSION_IDLE = timedelta(days=3)
-TOUCH_EVERY = timedelta(minutes=5)
+# Area clienti: uscita automatica dopo 5 minuti senza attività (la pagina avvisa 30 secondi prima).
+SESSION_IDLE = timedelta(minutes=5)
 LINKS_PER_EMAIL = (3, timedelta(hours=1))
 LINKS_PER_IP = (20, timedelta(hours=1))
 PAST_LIMIT = 10
@@ -136,8 +136,8 @@ def resolve(db: Database, token: str | None) -> ClientContext | None:
         if sess.last_seen_at < now - SESSION_IDLE:
             sess.revoked_at = now
             return None
-        if sess.last_seen_at < now - TOUCH_EVERY:
-            sess.last_seen_at = now
+        # Ogni richiesta del cliente conta come attività (il limite è di pochi minuti).
+        sess.last_seen_at = now
         return ClientContext(sess.id, sess.email)
 
 
@@ -224,6 +224,7 @@ def overview(db: Database, ctx: ClientContext) -> dict[str, object]:
 
         return {
             "email": ctx.email,
+            "idle_seconds": int(SESSION_IDLE.total_seconds()),
             "upcoming": [out(r, True) for r in upcoming],
             "past": [out(r, False) for r in past],
         }
