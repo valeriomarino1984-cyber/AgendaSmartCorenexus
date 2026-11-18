@@ -12,7 +12,7 @@ from datetime import date, datetime, time
 from decimal import Decimal
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
 from pydantic import BaseModel, Field, field_validator
 
 from app.api.deps import client_ip, current_auth, get_db, get_settings_dep
@@ -20,6 +20,7 @@ from app.core.config import Settings
 from app.core.db import Database
 from app.modules.accounts.service import AuthContext
 from app.modules.agenda import service
+from app.modules.notifications import service as notifications
 
 router = APIRouter(tags=["agenda"])
 
@@ -173,12 +174,16 @@ class StatusIn(BaseModel):
 def get_appointments(
     ctx: Member,
     db: Db,
+    settings: Conf,
+    background: BackgroundTasks,
     start: Annotated[datetime, Query(alias="from")],
     end: Annotated[datetime, Query(alias="to")],
     professional_id: uuid.UUID | None = None,
     client_id: uuid.UUID | None = None,
     include_cancelled: bool = False,
 ) -> list[dict[str, object]]:
+    # Promemoria "di passaggio" mentre l'agenda è in uso (oltre al cron di cPanel).
+    background.add_task(notifications.maybe_process, db, settings)
     return service.list_appointments(
         db,
         ctx,
@@ -191,8 +196,12 @@ def get_appointments(
 
 
 @router.post("/appointments", status_code=status.HTTP_201_CREATED)
-def post_appointment(body: AppointmentIn, ctx: Member, db: Db, settings: Conf) -> dict[str, object]:
-    return service.create_appointment(db, settings, ctx, body.model_dump())
+def post_appointment(
+    body: AppointmentIn, ctx: Member, db: Db, settings: Conf, background: BackgroundTasks
+) -> dict[str, object]:
+    out = service.create_appointment(db, settings, ctx, body.model_dump())
+    background.add_task(notifications.safe_process, db, settings, ctx.tenant_id)
+    return out
 
 
 @router.get("/appointments/{appointment_id}")
@@ -202,18 +211,32 @@ def get_appointment(appointment_id: uuid.UUID, ctx: Member, db: Db) -> dict[str,
 
 @router.patch("/appointments/{appointment_id}")
 def patch_appointment(
-    appointment_id: uuid.UUID, body: AppointmentUpdate, ctx: Member, db: Db, settings: Conf
+    appointment_id: uuid.UUID,
+    body: AppointmentUpdate,
+    ctx: Member,
+    db: Db,
+    settings: Conf,
+    background: BackgroundTasks,
 ) -> dict[str, object]:
     changes = body.model_dump(exclude_unset=True)
     version = changes.pop("version")
     for key in ("client_id", "professional_id", "service_id", "start_at", "duration_minutes"):
         if key in changes and changes[key] is None:
             changes.pop(key)
-    return service.update_appointment(db, settings, ctx, appointment_id, version, changes)
+    out = service.update_appointment(db, settings, ctx, appointment_id, version, changes)
+    background.add_task(notifications.safe_process, db, settings, ctx.tenant_id)
+    return out
 
 
 @router.post("/appointments/{appointment_id}/status")
 def post_status(
-    appointment_id: uuid.UUID, body: StatusIn, ctx: Member, db: Db
+    appointment_id: uuid.UUID,
+    body: StatusIn,
+    ctx: Member,
+    db: Db,
+    settings: Conf,
+    background: BackgroundTasks,
 ) -> dict[str, object]:
-    return service.set_status(db, ctx, appointment_id, body.version, body.status, body.reason)
+    out = service.set_status(db, ctx, appointment_id, body.version, body.status, body.reason)
+    background.add_task(notifications.safe_process, db, settings, ctx.tenant_id)
+    return out

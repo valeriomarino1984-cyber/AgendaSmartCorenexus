@@ -154,3 +154,26 @@ def platform_invite(to: str, name: str, url: str, first: bool) -> OutgoingEmail:
         ("Configura l'accesso", url),
         ["Il link vale 24 ore e si può usare una sola volta."],
     )
+
+
+def appointment_message(
+    to: str,
+    *,
+    subject: str,
+    title: str,
+    lines: list[str],
+    button: tuple[str, str] | None,
+    after: list[str],
+    studio: str,
+    reply_to: str | None,
+) -> OutgoingEmail:
+    """Email al cliente su un appuntamento: mittente con il nome dello studio, risposte a lui."""
+    mail = _mail(to, subject, title, lines, button, after)
+    return OutgoingEmail(
+        to=mail.to,
+        subject=mail.subject,
+        text=mail.text,
+        html=mail.html,
+        from_name=f"{studio} via Agenda",
+        reply_to=reply_to,
+    )

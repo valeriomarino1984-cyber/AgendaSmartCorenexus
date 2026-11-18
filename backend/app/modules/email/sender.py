@@ -12,7 +12,7 @@ import time
 import uuid
 from dataclasses import dataclass
 from email.message import EmailMessage
-from email.utils import formatdate, make_msgid
+from email.utils import formataddr, formatdate, make_msgid, parseaddr
 from pathlib import Path
 
 import structlog
@@ -28,6 +28,9 @@ class OutgoingEmail:
     subject: str
     text: str
     html: str | None = None
+    # Nome mostrato come mittente (es. lo studio) e indirizzo a cui va la risposta.
+    from_name: str | None = None
+    reply_to: str | None = None
 
 
 # Casella in memoria per i test (email_backend="memory").
@@ -36,7 +39,13 @@ MEMORY_OUTBOX: list[OutgoingEmail] = []
 
 def _build(settings: Settings, mail: OutgoingEmail) -> EmailMessage:
     msg = EmailMessage()
-    msg["From"] = settings.email_from
+    if mail.from_name:
+        _, address = parseaddr(settings.email_from)
+        msg["From"] = formataddr((mail.from_name, address))
+    else:
+        msg["From"] = settings.email_from
+    if mail.reply_to:
+        msg["Reply-To"] = mail.reply_to
     msg["To"] = mail.to
     msg["Subject"] = mail.subject
     msg["Date"] = formatdate(localtime=False)

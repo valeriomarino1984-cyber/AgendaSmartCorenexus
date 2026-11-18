@@ -26,4 +26,5 @@ from app.models.catalog import (  # noqa: F401
     ServiceProfessional,
 )
 from app.models.client_portal import ClientLoginToken, ClientSession  # noqa: F401
+from app.models.notifications import NotificationJob  # noqa: F401
 from app.models.platform import PlatformSession, PlatformStaff, PlatformToken  # noqa: F401

@@ -37,6 +37,8 @@ class StudioUpdate(BaseModel):
     contact_phone: Annotated[str, Field(max_length=30)] | None = None
     address: Annotated[str, Field(max_length=200)] | None = None
     cancellation_min_hours: Annotated[int, Field(ge=0, le=168)] | None = None
+    email_confirmations: bool | None = None
+    reminder_hours: Annotated[int, Field(ge=0, le=168)] | None = None
 
     @field_validator("contact_email")
     @classmethod

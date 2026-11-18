@@ -60,6 +60,9 @@ class Settings(BaseSettings):
     # Email che può fare la prima configurazione quando non esiste ancora nessun account.
     platform_bootstrap_email: str | None = None
 
+    # Chiave del cron di cPanel che fa partire i promemoria (POST /api/v1/webhooks/cron/notifiche).
+    cron_secret: SecretStr | None = None
+
     sentry_dsn: SecretStr | None = None
     sentry_traces_sample_rate: float = Field(default=0.0, ge=0.0, le=1.0)
 

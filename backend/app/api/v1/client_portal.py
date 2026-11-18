@@ -10,7 +10,7 @@ import re
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, Response, status
 from pydantic import BaseModel, Field, field_validator
 
 from app.api.deps import client_ip, get_db, get_settings_dep
@@ -21,6 +21,7 @@ from app.core.errors import must
 from app.modules.accounts.service import UnauthorizedError, deliver
 from app.modules.client_portal import service
 from app.modules.client_portal.service import ClientContext
+from app.modules.notifications import service as notifications
 
 router = APIRouter(prefix="/client-portal", tags=["area clienti"])
 
@@ -92,8 +93,16 @@ def me(ctx: ClientAuth, db: Db) -> dict[str, object]:
 
 
 @router.post("/appointments/{appointment_id}/cancel", status_code=status.HTTP_204_NO_CONTENT)
-def cancel(appointment_id: uuid.UUID, ctx: ClientAuth, db: Db, ip: Ip) -> None:
-    service.cancel(db, ctx, appointment_id, ip)
+def cancel(
+    appointment_id: uuid.UUID,
+    ctx: ClientAuth,
+    db: Db,
+    settings: Conf,
+    ip: Ip,
+    background: BackgroundTasks,
+) -> None:
+    tenant_id = service.cancel(db, ctx, appointment_id, ip)
+    background.add_task(notifications.safe_process, db, settings, tenant_id)
 
 
 @router.post("/keepalive")
