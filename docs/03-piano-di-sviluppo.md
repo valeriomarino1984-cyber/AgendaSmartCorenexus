@@ -7,7 +7,7 @@
 | # | Attività | Responsabile | Perché ora |
 |---|---|---|---|
 | P1 | Verifica aziendale CoreNexus su Meta Business Manager | CoreNexus | Prerequisito di tutto il percorso WhatsApp |
-| P2 | Meta App + richiesta stato **Tech Provider** (o accordo con BSP / percorso Solution Partner, vedi Decisione 5/7) | CoreNexus | Tempi decisi da Meta, nell'ordine di settimane |
+| P2 | Meta App + richiesta stato **Tech Provider** (o accordo con BSP / percorso Solution Partner, vedi Decisione 5/7) | CoreNexus | Tempi decisi da Meta, nell'ordine di settimane. **Percorso critico** dal 18/11/2026: WhatsApp è l'unico canale di messaggistica dell'MVP oltre all'email |
 | P3 | App Review permessi `whatsapp_business_management`, `whatsapp_business_messaging` | CoreNexus + sviluppo (video demo) | Serve un flusso funzionante in staging: va pianificata per la fine dello Sprint 4 |
 | P4 | Consulenza legale: DPA, informative, DPIA per categorie sanitarie, trasferimenti verso Meta | Legale | Va chiusa prima del primo cliente reale |
 | P5 | Scelta hosting UE e provider email UE | CoreNexus | Decisione 3, blocca lo Sprint 0 |
@@ -28,10 +28,13 @@
 | **6** (2 sett.) | **WhatsApp**: onboarding (Embedded Signup se approvato, altrimenti collegamento guidato manuale di WABA/numero in staging), creazione template via API, invio template con pulsanti, webhook firmati (verifica `X-Hub-Signature-256`), stati, quick reply CONFERMA, STOP → revoca consenso, registrazione consumi e costi | 8, 9, 14 | Tutti i "Test WhatsApp" della specifica §19, con mock HTTP (respx) + **prova manuale su numero di test Meta reale** in staging |
 | **7** (1–2 sett.) | Dashboard (KPI §3.1 con filtri), pagina Notifiche (fallite e reinvio), hardening sicurezza (Fase 3), backup cifrati e prova di ripristino, documentazione installazione e deploy, report di fase | 16, 17, 18 | E2E del percorso completo "registrazione → prima prenotazione → promemoria → conferma"; checklist sicurezza |
 
-**Fuori dall'MVP (scelta esplicita):** lista d'attesa, ricorrenze, Google Calendar, pagamenti, wallet e acquisto pacchetti, Stripe, Super Admin completo. Per l'MVP basta un'interfaccia admin minima interna, protetta e tracciata, per sospendere un tenant e vedere errori e consumi.
+**Fuori dall'MVP (scelta esplicita):** lista d'attesa, ricorrenze, Google Calendar, Stripe, Super Admin completo. **Fuori perimetro del prodotto** (decisione 18/11/2026): pagamenti dei clienti finali, pacchetti di sedute, wallet, fatturazione, scheda clinica. Canali dell'MVP: **WhatsApp + email**. Per l'MVP basta un'interfaccia admin minima interna, protetta e tracciata, per sospendere un tenant e vedere errori e consumi.
 
 ## Release 2 – Automazione
-Ricorrenze materializzate → lista d'attesa (offerte con scadenza; assegnazione garantita dal vincolo DB) → pagamenti e pacchetti sedute → ledger crediti WhatsApp (a seconda della Decisione 7) → Google Calendar (solo scrittura in R2, sincronizzazione bidirezionale da valutare) → report.
+Ricorrenze materializzate → lista d'attesa (offerte con scadenza; assegnazione garantita dal lock in transazione) → Google Calendar (solo scrittura in R2, sincronizzazione bidirezionale da valutare) → report. ~~Pagamenti e pacchetti sedute~~: fuori perimetro (18/11/2026).
+
+## Modulo "Campagne" (dopo l'MVP, da validare)
+Offerte promozionali dello studio via WhatsApp (template Marketing), con consenso marketing separato e revoca in un clic. Dettagli e vincoli in `04-decisioni-aperte.md` → *Posizionamento e perimetro*.
 
 ## Release 3 – Multi-studio
 UI multi-sede e stanze, vista per risorsa (da decidere il componente/licenza), ruolo segreteria con agende autorizzate, permessi granulari, dashboard studio.
