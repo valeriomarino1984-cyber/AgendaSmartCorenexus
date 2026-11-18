@@ -125,6 +125,8 @@ def test_openapi_disabled_in_production(settings: Settings) -> None:
             "app_base_url": "https://agenda.corenexus.it",
             "public_booking_base_url": "https://agenda.corenexus.it/prenota",
             "cors_origins": ["https://agenda.corenexus.it"],
+            "email_backend": "smtp",
+            "smtp_host": "mail.corenexus.it",
         }
     )
     application = create_app(prod)

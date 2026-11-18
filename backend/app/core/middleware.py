@@ -107,3 +107,51 @@ class SecurityHeadersMiddleware:
             await send(message)
 
         await self.app(scope, receive, send_wrapper)
+
+
+class OriginCheckMiddleware:
+    """Protezione CSRF: le richieste che modificano dati devono arrivare dal nostro sito.
+
+    L'autenticazione usa un cookie (SameSite=Lax); in più si verifica l'header Origin (o Referer)
+    delle richieste POST/PUT/PATCH/DELETE. Le future rotte per webhook esterni sono escluse.
+    """
+
+    UNSAFE = frozenset({"POST", "PUT", "PATCH", "DELETE"})
+
+    def __init__(
+        self, app: ASGIApp, *, allowed: set[str], exempt_prefixes: tuple[str, ...] = ()
+    ) -> None:
+        self.app = app
+        self.allowed = {o.rstrip("/") for o in allowed}
+        self.exempt_prefixes = exempt_prefixes
+
+    def _origin_ok(self, headers: Headers) -> bool:
+        origin = headers.get("origin")
+        if origin:
+            return origin.rstrip("/") in self.allowed
+        referer = headers.get("referer")
+        if referer:
+            return any(referer == o or referer.startswith(o + "/") for o in self.allowed)
+        return False
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if (
+            scope["type"] == "http"
+            and scope["method"] in self.UNSAFE
+            and not scope["path"].startswith(self.exempt_prefixes)
+            and not self._origin_ok(Headers(scope=scope))
+        ):
+            body = b'{"error":{"code":"origine_non_valida","message":"Richiesta non consentita."}}'
+            await send(
+                {
+                    "type": "http.response.start",
+                    "status": 403,
+                    "headers": [
+                        (b"content-type", b"application/json"),
+                        (b"content-length", str(len(body)).encode()),
+                    ],
+                }
+            )
+            await send({"type": "http.response.body", "body": body})
+            return
+        await self.app(scope, receive, send)

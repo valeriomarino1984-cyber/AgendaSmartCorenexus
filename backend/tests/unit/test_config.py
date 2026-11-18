@@ -10,6 +10,8 @@ PROD_OK = {
     "app_base_url": "https://agenda.corenexus.it",
     "public_booking_base_url": "https://agenda.corenexus.it/prenota",
     "cors_origins": ["https://agenda.corenexus.it"],
+    "email_backend": "smtp",
+    "smtp_host": "mail.corenexus.it",
 }
 
 
@@ -24,6 +26,9 @@ def test_production_config_valid() -> None:
         {"public_booking_base_url": "http://agenda.corenexus.it/prenota"},
         {"cors_origins": ["*"]},
         {"log_json": False},
+        {"email_backend": "file"},
+        {"email_backend": "memory"},
+        {"smtp_host": None},
     ],
 )
 def test_production_guards(override: dict[str, object]) -> None:
@@ -45,3 +50,12 @@ def test_only_pymysql_urls(url: str) -> None:
 def test_secrets_not_in_repr() -> None:
     s = Settings.model_validate({"database_url": "mysql+pymysql://u:supersegreto@h/db"})
     assert "supersegreto" not in repr(s)
+
+
+def test_secure_cookie_name_on_https() -> None:
+    s = Settings.model_validate(PROD_OK)
+    assert s.cookie_secure
+    assert s.session_cookie_name == "__Host-agenda_session"
+    dev = Settings.model_validate({**BASE, "environment": "development"})
+    assert not dev.cookie_secure
+    assert dev.session_cookie_name == "agenda_session"

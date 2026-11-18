@@ -7,11 +7,14 @@ import uuid
 from collections.abc import Iterator
 from contextlib import contextmanager
 
+import structlog
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core import tenancy  # noqa: F401  (registra i controlli ORM sull'isolamento)
-from app.core.tenancy import TENANT_KEY
+from app.core.tenancy import PLATFORM_KEY, TENANT_KEY
+
+log = structlog.get_logger("db")
 
 
 class UnsafeDatabaseUserError(RuntimeError):
@@ -86,6 +89,19 @@ class Database:
     def system_session(self) -> Iterator[Session]:
         """Transazione senza tenant: l'accesso ORM a dati degli studi è rifiutato (fail-closed)."""
         with self._sessionmaker() as session, session.begin():
+            yield session
+
+    @contextmanager
+    def platform_session(self, reason: str) -> Iterator[Session]:
+        """Lettura che attraversa più studi, con motivazione obbligatoria (registrata nei log).
+
+        Le scritture su dati degli studi restano vietate: per quelle serve tenant_session().
+        """
+        if not reason.strip():
+            raise ValueError("serve una motivazione per l'accesso di piattaforma")
+        log.info("platform_session", reason=reason)
+        with self._sessionmaker() as session, session.begin():
+            session.info[PLATFORM_KEY] = reason
             yield session
 
     def ping(self) -> None:

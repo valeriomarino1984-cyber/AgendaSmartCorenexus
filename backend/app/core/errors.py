@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TypeVar
 
 import structlog
 from fastapi import FastAPI, Request
@@ -93,3 +93,13 @@ def register_error_handlers(app: FastAPI) -> None:
             _body(request, "internal_error", "Errore interno. Riprovare più tardi."),
             status_code=500,
         )
+
+
+T = TypeVar("T")
+
+
+def must(value: T | None, what: str = "valore") -> T:
+    """Invariante esplicita (a differenza di assert, non sparisce con python -O)."""
+    if value is None:
+        raise RuntimeError(f"{what} mancante: stato inatteso")
+    return value

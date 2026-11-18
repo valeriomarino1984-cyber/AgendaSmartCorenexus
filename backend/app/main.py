@@ -15,7 +15,11 @@ from app.core.config import Settings, get_settings
 from app.core.db import Database
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
-from app.core.middleware import RequestContextMiddleware, SecurityHeadersMiddleware
+from app.core.middleware import (
+    OriginCheckMiddleware,
+    RequestContextMiddleware,
+    SecurityHeadersMiddleware,
+)
 from app.core.migrate import expected_revision
 from app.core.sentry import init_sentry
 
@@ -50,6 +54,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         openapi_url="/api/openapi.json" if expose_docs else None,
     )
     app.state.db = db
+    app.state.settings = settings
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
@@ -57,6 +62,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Authorization", "Content-Type", "Idempotency-Key", "X-Request-ID"],
         expose_headers=["X-Request-ID"],
+    )
+    app.add_middleware(
+        OriginCheckMiddleware,
+        allowed=settings.allowed_origins,
+        exempt_prefixes=("/api/v1/webhooks/",),
     )
     app.add_middleware(SecurityHeadersMiddleware, strict=settings.is_production_like)
     app.add_middleware(RequestContextMiddleware)  # ultimo aggiunto = più esterno

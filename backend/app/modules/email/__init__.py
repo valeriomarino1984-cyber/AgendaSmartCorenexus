@@ -1,0 +1,1 @@
+"""Invio email transazionali."""
