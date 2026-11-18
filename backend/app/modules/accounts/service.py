@@ -44,6 +44,8 @@ from app.models.accounts import (
 )
 from app.modules.accounts import ratelimit
 from app.modules.accounts.audit import audit
+from app.modules.catalog import service as catalog
+from app.modules.catalog.presets import profile_for
 from app.modules.email import templates
 from app.modules.email.sender import OutgoingEmail, send_email
 
@@ -293,6 +295,10 @@ def register(
         s.add_all([tenant, user])
         s.flush()
         s.add_all([TenantSettings(), Membership(user_id=user.id, role="owner")])
+        # Profilo professionale: sede principale, scheda del titolare e prestazioni consigliate.
+        catalog.create_default_location(s, tenant.timezone)
+        catalog.ensure_professional(s, user.id, user.full_name)
+        catalog.apply_profile(s, profile_for(business_type))
         token = _issue_token(s, user.id, "verify_email", VERIFY_TTL)
         audit(
             s,
@@ -557,6 +563,8 @@ def invite(
             membership = Membership(user_id=existing.id, role=role)
             s.add(membership)
             s.flush()
+            if role in catalog.PROFESSIONAL_ROLES:
+                catalog.ensure_professional(s, existing.id, existing.full_name)
             if existing.email_verified_at is not None:
                 outcome.emails.append(
                     templates.added_to_studio(
@@ -588,6 +596,8 @@ def invite(
             membership = Membership(user_id=user.id, role=role)
             s.add(membership)
             s.flush()
+            if role in catalog.PROFESSIONAL_ROLES:
+                catalog.ensure_professional(s, user.id, user.full_name)
             token = _issue_token(s, user.id, "invite", INVITE_TTL, invite_tenant_id=ctx.tenant_id)
             outcome.emails.append(
                 templates.invitation(
@@ -723,6 +733,9 @@ def update_member(
                 )
         before = {"role": m.role, "status": m.status}
         m.role, m.status = new_role, new_status
+        if new_role in catalog.PROFESSIONAL_ROLES and new_role != before["role"]:
+            member = must(s.get(User, m.user_id))
+            catalog.ensure_professional(s, member.id, member.full_name)
         audit(
             s,
             "member_updated",
