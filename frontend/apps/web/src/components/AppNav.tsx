@@ -46,16 +46,16 @@ export function studioNav(role: string): NavItem[] {
   const items: NavItem[] = [
     { href: "/app", label: "Dashboard", short: "Oggi", icon: "dashboard", section: "Panoramica" },
     { href: "/app/agenda", label: "Agenda", icon: "agenda", section: "Panoramica", comingIn: "Sprint 3" },
-    { href: "/app/clienti", label: "Clienti", icon: "clienti", section: "Studio", comingIn: "Sprint 2" },
-    { href: "/app/prestazioni", label: "Prestazioni", icon: "prestazioni", section: "Studio", comingIn: "Sprint 2" },
-    { href: "/app/professionisti", label: "Professionisti", icon: "professionisti", section: "Studio", comingIn: "Sprint 2" },
+    { href: "/app/clienti", label: "Clienti", icon: "clienti", section: "Studio" },
+    { href: "/app/prestazioni", label: "Prestazioni", icon: "prestazioni", section: "Studio", mobile: false },
+    { href: "/app/professionisti", label: "Professionisti", icon: "professionisti", section: "Studio", mobile: false },
     { href: "/app/disponibilita", label: "Disponibilità", icon: "disponibilita", section: "Studio", comingIn: "Sprint 3" },
     { href: "/app/prenotazioni-online", label: "Prenotazioni online", short: "Online", icon: "prenotazioni", section: "Comunicazioni", comingIn: "Sprint 4" },
     { href: "/app/notifiche", label: "Notifiche", icon: "notifiche", section: "Comunicazioni", comingIn: "Sprint 5" },
     { href: "/app/lista-attesa", label: "Lista d'attesa", icon: "attesa", section: "Comunicazioni", comingIn: "R2" },
     { href: "/app/report", label: "Report", icon: "report", section: "Sistema", comingIn: "R2" },
     ...(role === "owner"
-      ? [{ href: "/app/collaboratori", label: "Collaboratori", short: "Team", icon: "team" as const, section: "Sistema" }]
+      ? [{ href: "/app/collaboratori", label: "Collaboratori", short: "Team", icon: "team" as const, section: "Sistema", mobile: false }]
       : []),
     { href: "/app/impostazioni", label: "Impostazioni", icon: "impostazioni", section: "Sistema" },
     { href: "/app/abbonamento", label: "Abbonamento", icon: "abbonamento", section: "Sistema", comingIn: "R4" },
