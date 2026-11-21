@@ -123,6 +123,8 @@ Ogni notte uno script salva il database **cifrato** (AES-256), controlla che il 
      user=UTENTE_agmigr
      password=la-password-dell-utente
      host=localhost
+
+     [agenda]
      database=UTENTE_agenda
      ```
    - Su entrambi: tasto destro → *Change Permissions* → **600** (solo lettura e scrittura del proprietario). Lo script si rifiuta di partire con permessi più larghi.

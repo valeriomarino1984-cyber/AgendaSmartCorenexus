@@ -29,7 +29,7 @@ def env(tmp_path: Path) -> dict[str, str]:
         "[client]\n"
         f"user={url.username}\npassword={url.password}\n"
         f"host={url.host}\nport={url.port or 3306}\nprotocol=TCP\n"
-        f"database={url.database}\n"
+        f"[agenda]\ndatabase={url.database}\n"
     )
     key = tmp_path / "backup.key"
     key.write_text("chiave-di-prova-lunga-almeno-32-caratteri!\n")

@@ -3,8 +3,10 @@
 #   bash ~/agenda-api/ops/backup-db.sh
 #
 # File e variabili (tutti con valori predefiniti nella home dell'account):
-#   BACKUP_CNF              credenziali MariaDB [client] user/password/host + database=…
-#                           (default ~/.agenda-backup.cnf, permessi 600)
+#   BACKUP_CNF              credenziali: gruppo [client] con user/password/host e gruppo
+#                           [agenda] con database=… (default ~/.agenda-backup.cnf, permessi 600).
+#                           Il nome del database sta in [agenda] perché il mysqldump di MySQL 8
+#                           rifiuta l'opzione database in [client].
 #   BACKUP_PASSPHRASE_FILE  chiave di cifratura (default ~/.agenda-backup.key, permessi 600).
 #                           Conservane una copia FUORI dal server: senza, i backup non si aprono.
 #   BACKUP_DIR              cartella dei backup (default ~/agenda-backup, fuori da public_html)
@@ -28,7 +30,7 @@ for f in "$CNF" "$KEY"; do
   case "$(stat -c %a "$f")" in 600|400) ;; *) fail "$f deve avere permessi 600 (chmod 600 $f)";; esac
 done
 DB=$(sed -n 's/^[[:space:]]*database[[:space:]]*=[[:space:]]*//p' "$CNF" | head -n1)
-[ -n "$DB" ] || fail "in $CNF manca la riga database=…"
+[ -n "$DB" ] || fail "in $CNF manca la riga database=… (nel gruppo [agenda])"
 
 DUMP=$(command -v mariadb-dump || command -v mysqldump || true)
 [ -n "$DUMP" ] || fail "mysqldump non trovato"
