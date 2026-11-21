@@ -4,7 +4,7 @@ import { ClientEnter } from "@/components/clienti/ClientEnter";
 
 export const instant = false;
 
-export const metadata = { title: "Accesso area clienti" };
+export const metadata = { title: "Accesso area clienti", robots: { index: false, follow: false } };
 
 export default function Page() {
   return (

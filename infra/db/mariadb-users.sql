@@ -9,3 +9,7 @@ GRANT ALL PRIVILEGES ON agenda_test.* TO 'agenda_migr'@'%';
 -- Utente dell'applicazione: solo lettura e scrittura dei dati, nessuna modifica allo schema.
 CREATE USER IF NOT EXISTS 'agenda_app'@'%' IDENTIFIED BY 'app_dev';
 GRANT SELECT, INSERT, UPDATE, DELETE ON agenda_test.* TO 'agenda_app'@'%';
+
+-- Prova di ripristino dei backup (tests/integration/test_backup.py): database vuoto a parte.
+CREATE DATABASE IF NOT EXISTS agenda_restore_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL PRIVILEGES ON agenda_restore_test.* TO 'agenda_migr'@'%';

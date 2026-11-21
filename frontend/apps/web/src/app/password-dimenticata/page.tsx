@@ -3,7 +3,7 @@ import { AuthShell } from "@/components/AuthShell";
 import { ForgotPassword } from "@/components/auth/TokenForms";
 import { linkCls } from "@/components/ui";
 
-export const metadata = { title: "Password dimenticata" };
+export const metadata = { title: "Password dimenticata", robots: { index: false, follow: false } };
 
 export default function Page() {
   return (

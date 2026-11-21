@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { STATUS_TONE, addDays, formatTime, toInstant, today as todayIn, type Appointment, type WeeklyRule } from "@/lib/agenda";
 import type { Location, Professional } from "@/lib/catalog";
 import { useMe } from "@/lib/me";
+import { StudioNumbers } from "./StudioNumbers";
 
 interface Studio { contact_email: string | null; contact_phone: string | null; address: string | null }
 interface Member { status: string }
@@ -72,7 +73,7 @@ export function Dashboard() {
   return (
     <>
       <PageHeader meta={today()} title={`Ciao, ${me.user.full_name.split(" ")[0]}`} />
-      <Panel title="Per iniziare" flush>
+      {steps.some((st) => !st.done) && <Panel title="Per iniziare" flush>
         <ul>
           {steps.map((s) => (
             <li key={s.href} className="border-t border-rule first:border-t-0">
@@ -91,7 +92,7 @@ export function Dashboard() {
             </li>
           ))}
         </ul>
-      </Panel>
+      </Panel>}
       <Panel
         title="Agenda di oggi"
         meta={agenda ? `${agenda.items.length} ${agenda.items.length === 1 ? "appuntamento" : "appuntamenti"}` : undefined}
@@ -120,6 +121,7 @@ export function Dashboard() {
           ))}
         </ul>
       </Panel>
+      {agenda && <StudioNumbers tz={agenda.tz} canFilter={me.role !== "professional"} />}
     </>
   );
 }

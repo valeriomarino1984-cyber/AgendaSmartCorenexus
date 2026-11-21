@@ -8,6 +8,7 @@ rm -rf "$OUT" dist/agenda-api-cpanel.zip
 mkdir -p "$OUT/tmp"
 cp -r app migrations "$OUT/"
 cp alembic.ini passenger_wsgi.py install_deps.py "$OUT/"
+mkdir -p "$OUT/ops" && cp ops/backup-db.sh ops/restore-db.sh "$OUT/ops/"
 find "$OUT" -name "__pycache__" -type d -prune -exec rm -rf {} +
 # I file da 0 byte interrompono il caricamento FTPS su Netsons (errore TLS sul canale dati).
 if [ -n "$(find "$OUT" -type f -size 0)" ]; then

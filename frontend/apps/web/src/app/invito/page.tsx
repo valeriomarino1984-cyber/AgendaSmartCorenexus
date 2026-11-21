@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { AuthShell, FormSkeleton } from "@/components/AuthShell";
 import { AcceptInvitation } from "@/components/auth/TokenForms";
 
-export const metadata = { title: "Invito" };
+export const metadata = { title: "Invito", robots: { index: false, follow: false } };
 
 export default function Page() {
   return (

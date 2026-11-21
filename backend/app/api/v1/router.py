@@ -5,6 +5,7 @@ from app.api.v1 import (
     auth,
     catalog,
     client_portal,
+    dashboard,
     health,
     meta,
     notifications,
@@ -20,6 +21,7 @@ api_v1_router.include_router(auth.router)
 api_v1_router.include_router(tenants.router)
 api_v1_router.include_router(catalog.router)
 api_v1_router.include_router(agenda.router)
+api_v1_router.include_router(dashboard.router)
 api_v1_router.include_router(client_portal.router)
 api_v1_router.include_router(platform.router)
 api_v1_router.include_router(notifications.router)

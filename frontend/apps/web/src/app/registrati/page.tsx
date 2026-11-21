@@ -3,7 +3,7 @@ import { AuthShell } from "@/components/AuthShell";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { linkCls } from "@/components/ui";
 
-export const metadata = { title: "Registra il tuo studio" };
+export const metadata = { title: "Registra il tuo studio", robots: { index: false, follow: false } };
 
 export default function Page() {
   return (
