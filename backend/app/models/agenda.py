@@ -112,6 +112,7 @@ class Appointment(TenantScoped, Base):
     __table_args__ = (
         UniqueConstraint("tenant_id", "id"),
         UniqueConstraint("tenant_id", "public_code"),
+        UniqueConstraint("tenant_id", "booking_key"),
         ForeignKeyConstraint(["tenant_id"], ["tenants.id"]),
         ForeignKeyConstraint(["tenant_id", "client_id"], ["clients.tenant_id", "clients.id"]),
         ForeignKeyConstraint(
@@ -154,6 +155,8 @@ class Appointment(TenantScoped, Base):
     notes: Mapped[str | None] = mapped_column(Text)  # solo amministrative, mai nei messaggi
     cancellation_reason: Mapped[str | None] = mapped_column(String(300))
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    # Prenotazione online: chiave scelta dal browser, lo stesso invio ripetuto non crea doppioni.
+    booking_key: Mapped[str | None] = mapped_column(String(64))
     created_by: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("users.id"))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=utcnow, onupdate=utcnow

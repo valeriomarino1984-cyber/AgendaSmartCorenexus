@@ -783,6 +783,10 @@ def get_studio(db: Database, ctx: AuthContext) -> dict[str, object]:
             "cancellation_min_hours": st.cancellation_min_hours,
             "email_confirmations": st.email_confirmations,
             "reminder_hours": st.reminder_hours,
+            "online_booking_enabled": st.online_booking_enabled,
+            "online_booking_days_ahead": st.online_booking_days_ahead,
+            "online_booking_min_notice_hours": st.online_booking_min_notice_hours,
+            "online_booking_requires_confirmation": st.online_booking_requires_confirmation,
         }
 
 

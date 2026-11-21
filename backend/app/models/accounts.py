@@ -74,6 +74,10 @@ class TenantSettings(TenantScoped, Base):
         ForeignKeyConstraint(["tenant_id"], ["tenants.id"]),
         CheckConstraint("cancellation_min_hours BETWEEN 0 AND 168", name="preavviso_valido"),
         CheckConstraint("reminder_hours BETWEEN 0 AND 168", name="promemoria_valido"),
+        CheckConstraint("online_booking_days_ahead BETWEEN 1 AND 365", name="giorni_prenotabili"),
+        CheckConstraint(
+            "online_booking_min_notice_hours BETWEEN 0 AND 168", name="preavviso_online"
+        ),
     )
 
     contact_email: Mapped[str | None] = mapped_column(String(254))
@@ -84,6 +88,13 @@ class TenantSettings(TenantScoped, Base):
     # promemoria (0 = nessun promemoria).
     email_confirmations: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     reminder_hours: Mapped[int] = mapped_column(Integer, nullable=False, default=24)
+    # Prenotazione online (/prenota/<slug>): spenta finché lo studio non la attiva.
+    online_booking_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    online_booking_days_ahead: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
+    online_booking_min_notice_hours: Mapped[int] = mapped_column(Integer, nullable=False, default=2)
+    online_booking_requires_confirmation: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=utcnow, onupdate=utcnow
     )

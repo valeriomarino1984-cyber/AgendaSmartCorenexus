@@ -9,6 +9,7 @@ from app.api.v1 import (
     meta,
     notifications,
     platform,
+    public,
     tenants,
 )
 
@@ -22,3 +23,4 @@ api_v1_router.include_router(agenda.router)
 api_v1_router.include_router(client_portal.router)
 api_v1_router.include_router(platform.router)
 api_v1_router.include_router(notifications.router)
+api_v1_router.include_router(public.router)
