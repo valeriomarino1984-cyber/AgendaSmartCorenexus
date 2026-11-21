@@ -1,4 +1,4 @@
-import { ArrowUpRight, BellRing, CalendarRange, Clock3, ShieldCheck, Timer, LockKeyhole, Sparkles, Stethoscope, UserCog, Users, Video } from "lucide-react";
+import { ArrowUpRight, BellRing, CalendarRange, Clock3, Globe, ShieldCheck, Timer, LockKeyhole, Sparkles, Stethoscope, UserCog, Users, Video } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
@@ -10,6 +10,12 @@ import { CONTACT_PAGE } from "@/lib/contacts";
 export const metadata = { title: `Novità di ${APP_NAME}`, description: `Gli ultimi aggiornamenti di ${APP_NAME}.` };
 
 const releases: { label: string; items: { icon: ReactNode; tile: string; title: string; text: string }[] }[] = [
+  {
+    label: "21 novembre 2026 · versione 0.8",
+    items: [
+      { icon: <Globe />, tile: "bg-accent", title: "Prenotazione online", text: "Ogni studio ha la sua pagina: i clienti scelgono prestazione, professionista e orario libero e prenotano da soli, anche dal telefono. Link e QR da condividere, regole su giorni, preavviso e conferma manuale." },
+    ],
+  },
   {
     label: "18 novembre 2026 · versione 0.7",
     items: [

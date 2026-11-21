@@ -50,7 +50,7 @@ export function studioNav(role: string): NavItem[] {
     { href: "/app/prestazioni", label: "Prestazioni", icon: "prestazioni", section: "Studio", mobile: false },
     { href: "/app/professionisti", label: "Professionisti", icon: "professionisti", section: "Studio", mobile: false },
     { href: "/app/disponibilita", label: "Disponibilità", icon: "disponibilita", section: "Studio", mobile: false },
-    { href: "/app/prenotazioni-online", label: "Prenotazioni online", short: "Online", icon: "prenotazioni", section: "Comunicazioni", comingIn: "Sprint 4" },
+    { href: "/app/prenotazioni-online", label: "Prenotazioni online", short: "Online", icon: "prenotazioni", section: "Comunicazioni", mobile: false },
     { href: "/app/notifiche", label: "Notifiche", icon: "notifiche", section: "Comunicazioni", mobile: false },
     { href: "/app/lista-attesa", label: "Lista d'attesa", icon: "attesa", section: "Comunicazioni", comingIn: "R2" },
     { href: "/app/report", label: "Report", icon: "report", section: "Sistema", comingIn: "R2" },

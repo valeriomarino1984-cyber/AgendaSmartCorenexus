@@ -66,15 +66,15 @@ const FEATURES: { icon: ReactNode; tile: string; title: string; text: string; st
     icon: <Globe />,
     tile: "bg-accent",
     title: "Prenotazione online",
-    text: "Una pagina dello studio con prestazioni e orari liberi: il cliente prenota da solo, anche dal telefono.",
-    status: "soon",
+    text: "Una pagina dello studio con prestazioni e orari liberi: il cliente prenota da solo, anche dal telefono, e riceve subito la conferma.",
+    status: "live",
   },
   {
     icon: <BellRing />,
     tile: "bg-wa",
     title: "Conferme e promemoria",
-    text: "Email e WhatsApp con le API ufficiali di Meta, con il link della visita online e i pulsanti Conferma, Sposta, Disdici.",
-    status: "soon",
+    text: "Email di conferma, promemoria e avvisi con il link della visita online. Su WhatsApp con le API ufficiali di Meta a breve.",
+    status: "live",
   },
 ];
 
@@ -121,8 +121,8 @@ const FAQ = [
     a: "Fisioterapisti, osteopati, nutrizionisti e psicologi hanno un profilo dedicato con le prestazioni tipiche già pronte; per le altre attività c'è un profilo generico da personalizzare.",
   },
   {
-    q: "Quando arrivano i promemoria su WhatsApp?",
-    a: "Sono in preparazione: conferme e promemoria partiranno via email e, per chi ha dato il consenso, su WhatsApp con le API ufficiali di Meta. Ogni studio userà il proprio numero.",
+    q: "Il cliente riceve conferme e promemoria?",
+    a: "Sì, via email: conferma quando l'appuntamento viene fissato, promemoria prima della visita (anticipo scelto dallo studio) e avvisi se cambia o si annulla, con il link della videochiamata per le visite online. I promemoria su WhatsApp arriveranno con le API ufficiali di Meta.",
   },
   {
     q: "Chi della squadra può fare cosa?",
