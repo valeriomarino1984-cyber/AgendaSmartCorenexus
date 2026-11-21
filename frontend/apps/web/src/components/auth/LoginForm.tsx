@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "@/lib/api";
 import { Field, Notice, btnPrimary, btnTinted, inputCls, linkCls } from "../ui";
 import { safeNext, useAction } from "./useAction";
@@ -53,21 +53,5 @@ export function LoginForm() {
         </Link>
       </p>
     </form>
-  );
-}
-
-export function SignupLink() {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    api<{ signup_open: boolean }>("/meta/config").then((c) => setOpen(c.signup_open), () => setOpen(false));
-  }, []);
-  if (!open) return null;
-  return (
-    <>
-      Nuovo studio?{" "}
-      <Link href="/registrati" className={linkCls}>
-        Registrati ›
-      </Link>
-    </>
   );
 }

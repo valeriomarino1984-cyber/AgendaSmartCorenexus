@@ -175,12 +175,14 @@ export default async function Home() {
               <a key={href} href={href} className="nav-u hover:text-ink">{label}</a>
             ))}
           </nav>
-          <span className="flex items-center gap-3">
-            <Link href="/area-clienti" className="hidden t-footnote font-semibold text-link hover:underline sm:inline">
-              Area clienti
+          <span className="flex items-center gap-2">
+            <Link href="/area-clienti" className="rounded-full border border-accent/40 px-3 py-1.5 t-footnote font-semibold text-link transition hover:bg-accent/10 sm:px-4">
+              <span className="sm:hidden">Clienti</span>
+              <span className="hidden sm:inline">Area clienti</span>
             </Link>
-            <Link href="/accedi" className="rounded-full bg-accent px-4 py-1.5 t-footnote font-semibold text-white transition hover:bg-accent-hover">
-              Accedi
+            <Link href="/accedi" className="rounded-full bg-accent px-3 py-1.5 t-footnote font-semibold text-white transition hover:bg-accent-hover sm:px-4">
+              <span className="sm:hidden">Professionisti</span>
+              <span className="hidden sm:inline">Area professionisti</span>
             </Link>
           </span>
         </div>
@@ -416,7 +418,7 @@ export default async function Home() {
                 <ArrowUpRight className="cta-arrow h-[18px] w-[18px]" />
               </a>
               <Link href="/accedi" className={`${linkCls} nudge-link text-[17px]`}>
-                Hai già un account? Accedi <span className="nudge">›</span>
+                Sei un professionista? Accedi <span className="nudge">›</span>
               </Link>
             </div>
 
