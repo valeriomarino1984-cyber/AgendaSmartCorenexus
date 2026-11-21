@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import {
-  ArrowUpRight, BellRing, CalendarClock, CalendarRange, Clock3, Globe, Lock, Mail, MessageCircle, Phone, ShieldCheck, Sparkles, Stethoscope,
+  ArrowUpRight, BarChart3, BellRing, CalendarClock, CalendarRange, Clock3, Globe, Lock, Mail, MessageCircle, Phone, ShieldCheck, Sparkles, Stethoscope,
   Users, UserCog, Video,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -74,6 +74,13 @@ const FEATURES: { icon: ReactNode; tile: string; title: string; text: string; st
     tile: "bg-wa",
     title: "Conferme e promemoria",
     text: "Email di conferma, promemoria e avvisi con il link della visita online. Su WhatsApp con le API ufficiali di Meta a breve.",
+    status: "live",
+  },
+  {
+    icon: <BarChart3 />,
+    tile: "bg-sys-indigo",
+    title: "I numeri dello studio",
+    text: "Appuntamenti, occupazione dell'agenda, clienti nuovi, incassato, disdette e assenze, per periodo e per professionista.",
     status: "live",
   },
 ];

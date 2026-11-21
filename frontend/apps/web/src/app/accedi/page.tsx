@@ -3,7 +3,7 @@ import { AuthShell, FormSkeleton } from "@/components/AuthShell";
 import { AreaSwitch } from "@/components/auth/AreaSwitch";
 import { LoginForm } from "@/components/auth/LoginForm";
 
-export const metadata = { title: "Login professionisti" };
+export const metadata = { title: "Login professionisti", robots: { index: false, follow: false } };
 
 export default function Page() {
   return (

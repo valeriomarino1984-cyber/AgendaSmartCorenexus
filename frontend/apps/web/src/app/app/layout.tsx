@@ -5,6 +5,8 @@ import { AppGate } from "@/components/studio/AppGate";
 // (docs Next.js: instant-navigation → Opting out).
 export const instant = false;
 
+export const metadata = { robots: { index: false, follow: false } };
+
 export default function Layout({ children }: LayoutProps<"/app">) {
   return <AppGate>{children}</AppGate>;
 }

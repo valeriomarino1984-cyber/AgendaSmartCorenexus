@@ -1,4 +1,4 @@
-import { ArrowUpRight, BellRing, CalendarRange, Clock3, Globe, ShieldCheck, Timer, LockKeyhole, Sparkles, Stethoscope, UserCog, Users, Video } from "lucide-react";
+import { ArrowUpRight, BarChart3, BellRing, CalendarRange, Clock3, Globe, ShieldCheck, Timer, LockKeyhole, Sparkles, Stethoscope, UserCog, Users, Video } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
@@ -10,6 +10,13 @@ import { CONTACT_PAGE } from "@/lib/contacts";
 export const metadata = { title: `Novità di ${APP_NAME}`, description: `Gli ultimi aggiornamenti di ${APP_NAME}.` };
 
 const releases: { label: string; items: { icon: ReactNode; tile: string; title: string; text: string }[] }[] = [
+  {
+    label: "21 novembre 2026 · versione 0.9",
+    items: [
+      { icon: <BarChart3 />, tile: "bg-sys-indigo", title: "I numeri dello studio", text: "Nella dashboard: appuntamenti, occupazione dell'agenda, clienti nuovi, incassato, disdette, assenze e prenotazioni online, con l'andamento per giorno o per mese. Filtri per periodo e per professionista." },
+      { icon: <ShieldCheck />, tile: "bg-sys-green", title: "Backup cifrati e più sicurezza", text: "Backup notturno del database cifrato e verificato, con prova di ripristino. Registrazione libera chiusa: i nuovi studi si attivano con CoreNexus." },
+    ],
+  },
   {
     label: "21 novembre 2026 · versione 0.8",
     items: [

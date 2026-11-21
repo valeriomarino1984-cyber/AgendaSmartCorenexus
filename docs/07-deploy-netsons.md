@@ -111,14 +111,45 @@ Se cambiano le dipendenze il workflow lo segnala con un avviso: in cPanel esegui
 - *"schema del database alla versione …"*: le migrazioni non sono state applicate. Verifica `AUTO_MIGRATE=1` e `MIGRATIONS_DATABASE_URL`, poi *Restart*.
 - Nel log può comparire `auto_migrate_skipped`: è normale quando Passenger ricarica l'app dopo che le migrazioni sono già state applicate.
 
-## 7. Backup
-I backup completi di cPanel includono database e cartelle. Inoltre, ogni tanto: *phpMyAdmin* → `UTENTE_agenda` → *Esporta*, e conserva il file fuori dal server. Una procedura automatica con verifica (come in Presenze) arriverà con lo Sprint 7.
+## 7. Backup cifrati del database (da fare una volta)
+Ogni notte uno script salva il database **cifrato** (AES-256), controlla che il file si apra e sia completo, e tiene gli ultimi 14 giorni. Gli script arrivano con il deploy in `agenda-api/ops/`.
+
+1. **Chiave di cifratura.** Genera con il password manager una frase casuale di **almeno 32 caratteri**. Salvala nel password manager: **senza questa chiave i backup non si possono aprire**.
+2. *File Manager* → cartella home (`/home/UTENTE`, **non** `public_html`) → *+ File*:
+   - `.agenda-backup.key`: incolla la chiave, salva.
+   - `.agenda-backup.cnf`, con l'utente delle migrazioni (ha i permessi di lettura completi):
+     ```
+     [client]
+     user=UTENTE_agmigr
+     password=la-password-dell-utente
+     host=localhost
+
+     [agenda]
+     database=UTENTE_agenda
+     ```
+   - Su entrambi: tasto destro → *Change Permissions* → **600** (solo lettura e scrittura del proprietario). Lo script si rifiuta di partire con permessi più larghi.
+3. *Cron Jobs* → *Add New Cron Job*, ogni notte alle 3:17:
+   ```
+   17 3 * * * bash $HOME/agenda-api/ops/backup-db.sh >> $HOME/agenda-backup.log 2>&1
+   ```
+4. Il mattino dopo, in `agenda-backup.log` deve esserci `Backup verificato: …`. I file sono in `/home/UTENTE/agenda-backup/` (`agenda-AAAAMMGG-HHMMSS.sql.gz.enc` e la sua somma `.sha256`).
+5. **Copia fuori dal server**, almeno una volta a settimana: scarica l'ultimo `.enc` dal *File Manager* e conservalo altrove (è cifrato, si può tenere anche su un disco o un cloud personale).
+
+### Prova di ripristino (una volta, poi ogni 3 mesi)
+1. *Database MySQL* → crea un database vuoto `UTENTE_agprova` e aggiungici `UTENTE_agmigr` con *Tutti i privilegi*.
+2. *Terminale* di cPanel:
+   ```
+   bash ~/agenda-api/ops/restore-db.sh ~/agenda-backup/<ultimo-file>.sql.gz.enc UTENTE_agprova
+   ```
+3. Deve stampare la versione dello schema e il numero di righe di studi, utenti, clienti e appuntamenti: confrontali con il sito.
+4. Svuota o elimina `UTENTE_agprova` dopo la prova.
+
+Lo script **non** scrive sul database di produzione, a meno di aggiungere `--forza`: serve solo per un vero ripristino d'emergenza, a sito fermo (*Stop App* su `agenda-api`).
+
+I backup completi di cPanel (database e cartelle) restano attivi come seconda copia.
 
 ## Email (dallo Sprint 1)
 Le email di conferma, password dimenticata e inviti partono via SMTP. La casella più semplice è un account email del cPanel (es. `no-reply@corenexus.it`, *Account email* → *Crea*); i parametri sono in *Configura client email*. Per una buona consegna verifica in cPanel → *Email Deliverability* che SPF e DKIM del dominio siano a posto.
 
 ## Registrazione degli studi
 Con `SIGNUP_OPEN=false` (default) la pagina `/registrati` mostra "registrazione chiusa". Per le prove interne impostala a `true`, crea lo studio e poi riportala a `false` (*Restart* dopo ogni modifica). Va aperta al pubblico solo quando saranno pubblicate condizioni del servizio e informativa privacy (punto P4 del piano: revisione legale).
-
-## In arrivo con gli sprint successivi
-- **Cron** (Sprint 5): invio dei promemoria, come `/api/promemoria` di Presenze, con chiave segreta `CRON_SECRET`.

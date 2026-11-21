@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { AuthShell, FormSkeleton } from "@/components/AuthShell";
 import { VerifyEmail } from "@/components/auth/TokenForms";
 
-export const metadata = { title: "Conferma email" };
+export const metadata = { title: "Conferma email", robots: { index: false, follow: false } };
 
 export default function Page() {
   return (

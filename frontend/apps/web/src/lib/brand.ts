@@ -3,7 +3,7 @@ export const APP_NAME = "Agenda";
 export const FULL_NAME = "CoreNexus Agenda";
 
 /** Versione mostrata nel piè di pagina: aggiornarla a ogni rilascio, insieme alla pagina Novità. */
-export const APP_VERSION = "0.8";
+export const APP_VERSION = "0.9";
 export const APP_UPDATED = "21/11/2026";
 export const DEVELOPER = "CoreNexus Technology Solutions";
 export const DEVELOPER_URL = "https://www.corenexus.it";
