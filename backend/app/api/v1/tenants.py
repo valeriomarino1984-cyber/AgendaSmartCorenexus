@@ -39,6 +39,10 @@ class StudioUpdate(BaseModel):
     cancellation_min_hours: Annotated[int, Field(ge=0, le=168)] | None = None
     email_confirmations: bool | None = None
     reminder_hours: Annotated[int, Field(ge=0, le=168)] | None = None
+    online_booking_enabled: bool | None = None
+    online_booking_days_ahead: Annotated[int, Field(ge=1, le=365)] | None = None
+    online_booking_min_notice_hours: Annotated[int, Field(ge=0, le=168)] | None = None
+    online_booking_requires_confirmation: bool | None = None
 
     @field_validator("contact_email")
     @classmethod

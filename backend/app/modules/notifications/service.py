@@ -195,7 +195,10 @@ def _skip_reason(job: NotificationJob, c: _Context) -> str | None:
         return "senza_email"
     if c.client.preferred_channel == "none":
         return "nessun_messaggio"
-    if not c.client.email_consent:
+    # Chi prenota online ha chiesto lui la conferma (e gli avvisi sul suo appuntamento):
+    # per quelli non serve il consenso ai promemoria, che vale invece per i promemoria.
+    transactional = c.a.source == "public_booking" and job.kind != "reminder"
+    if not c.client.email_consent and not transactional:
         return "senza_consenso"
     if job.kind in ("confirmation", "reminder", "rescheduled") and c.a.status not in ACTIVE:
         return "appuntamento_non_attivo"
@@ -473,3 +476,11 @@ def retry(s: Session, job: NotificationJob) -> NotificationJob:
     s.add(copy)
     s.flush()
     return copy
+
+
+def maybe_process_now(db: Database, settings: Settings) -> None:
+    """Invio immediato dopo una prenotazione pubblica (lo studio non è noto alla rotta)."""
+    try:
+        process_due(db, settings, limit=10)
+    except Exception:
+        log.exception("notifications_failed")
